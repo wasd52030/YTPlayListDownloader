@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "A4CMLivkrz/OTSCWfEUkT0Po5TBies2EliPFOZEil/0Bd7JMSHF9lnSRq6BFz0p6PVWc9KnYeAgY0dPsTvq1VA==",
+  "success": true,
+  "projectFilePath": "D:\\source-codes\\YTPlayListDownloader_csharp\\YTPlayListDownloader_csharp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\user\\.nuget\\packages\\anglesharp\\0.17.0\\anglesharp.0.17.0.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\cliwrap\\3.5.0\\cliwrap.3.5.0.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\system.linq.async\\6.0.1\\system.linq.async.6.0.1.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\system.text.encoding.codepages\\5.0.0\\system.text.encoding.codepages.5.0.0.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\youtubeexplode\\6.2.5\\youtubeexplode.6.2.5.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\youtubeexplode.converter\\6.2.5\\youtubeexplode.converter.6.2.5.nupkg.sha512"
+  ],
+  "logs": []
+}
