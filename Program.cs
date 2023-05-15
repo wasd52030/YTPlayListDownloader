@@ -53,8 +53,10 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
             }
             await Task.Delay(250);
         }
-        catch (System.Exception)
+        catch (System.Exception e)
         {
+            Console.WriteLine("Boom！");
+            Console.WriteLine($"explodeCount: {explodeCount+1}\n");
             return await download(yt, list, playListLength, count - 1, explodeCount + 1);
         }
     }
