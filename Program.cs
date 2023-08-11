@@ -1,6 +1,7 @@
 ﻿using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 using YoutubeExplode.Playlists;
+using System.Text.Json;
 
 string removeSpecialChar(string input)
 {
@@ -10,6 +11,24 @@ string removeSpecialChar(string input)
     }
 
     return input;
+}
+
+
+async Task<Dictionary<string, string>> getCustomName()
+{
+    string file = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
+    Dictionary<string, int> stat = new Dictionary<string, int>();
+    using (JsonDocument json = JsonDocument.Parse(file, new JsonDocumentOptions { AllowTrailingCommas = true }))
+    {
+        JsonElement root = json.RootElement;
+        JsonElement videos = root.GetProperty("items");
+        return (
+            videos.EnumerateArray().ToDictionary(
+                k => k.GetProperty("id").ToString(),
+                v => v.GetProperty("name").ToString()
+            )
+        );
+    }
 }
 
 async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string url)
@@ -33,9 +52,11 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         var vinfo = await yt.Videos.GetAsync(list[0].Url);
         var vtitle = vinfo.Title;
         vtitle = removeSpecialChar(vtitle);
+        var customName = await getCustomName();
         try
         {
             count++;
+            vtitle = customName.ContainsKey(vinfo.Id) ? customName[vinfo.Id] : vtitle;
             if (File.Exists($@"./{vtitle}.mp3"))
             {
 
@@ -56,7 +77,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         catch (System.Exception e)
         {
             Console.WriteLine("Boom！");
-            Console.WriteLine($"explodeCount: {explodeCount+1}\n");
+            Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
             return await download(yt, list, playListLength, count - 1, explodeCount + 1);
         }
     }
@@ -93,6 +114,7 @@ async Task main()
         Directory.CreateDirectory($"./{name}");
     }
     Directory.SetCurrentDirectory($"./{name}");
+
 
 
     var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
