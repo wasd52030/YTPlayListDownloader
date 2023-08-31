@@ -18,25 +18,25 @@ async Task<Dictionary<string, string>> getCustomName()
 {
     string file = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
     Dictionary<string, int> stat = new Dictionary<string, int>();
-    using (JsonDocument json = JsonDocument.Parse(file, new JsonDocumentOptions { AllowTrailingCommas = true }))
-    {
-        JsonElement root = json.RootElement;
-        JsonElement videos = root.GetProperty("items");
-        return (
-            videos.EnumerateArray().ToDictionary(
-                k => k.GetProperty("id").ToString(),
-                v => v.GetProperty("name").ToString()
-            )
-        );
-    }
+    using JsonDocument json = JsonDocument.Parse(file, new JsonDocumentOptions { AllowTrailingCommas = true });
+    JsonElement root = json.RootElement;
+    JsonElement videos = root.GetProperty("items");
+    return (
+        videos.EnumerateArray().ToDictionary(
+            k => k.GetProperty("id").ToString(),
+            v => v.GetProperty("name").ToString()
+        )
+    );
 }
 
 async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string url)
 {
     var playlist = await yt.Playlists.GetAsync(url);
-    Dictionary<string, string> info = new Dictionary<string, string>();
-    info.Add("title", playlist.Title);
-    info.Add("owner", playlist.Author?.ChannelTitle!);
+    Dictionary<string, string> info = new Dictionary<string, string>
+    {
+        { "title", playlist.Title },
+        { "owner", playlist.Author?.ChannelTitle! }
+    };
     return info;
 }
 
@@ -122,7 +122,7 @@ async Task main()
     Console.WriteLine($"共炸了{explodeCount}次");
 
     var t2 = DateTime.UtcNow;
-    Console.WriteLine($"執行時間: {(t2 - t1)}");
+    Console.WriteLine($"執行時間: {t2 - t1}");
 }
 
 await main();
