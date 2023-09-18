@@ -17,7 +17,6 @@ string removeSpecialChar(string input)
 async Task<Dictionary<string, string>> getCustomName()
 {
     string file = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
-    Dictionary<string, int> stat = new Dictionary<string, int>();
     using JsonDocument json = JsonDocument.Parse(file, new JsonDocumentOptions { AllowTrailingCommas = true });
     JsonElement root = json.RootElement;
     JsonElement videos = root.GetProperty("items");
