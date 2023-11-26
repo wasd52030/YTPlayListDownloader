@@ -2,6 +2,8 @@
 using YoutubeExplode.Videos.Streams;
 using YoutubeExplode.Playlists;
 using System.Text.Json;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 string removeSpecialChar(string input)
 {
@@ -11,21 +13,6 @@ string removeSpecialChar(string input)
     }
 
     return input;
-}
-
-
-async Task<Dictionary<string, string>> getCustomName()
-{
-    string file = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
-    using JsonDocument json = JsonDocument.Parse(file, new JsonDocumentOptions { AllowTrailingCommas = true });
-    JsonElement root = json.RootElement;
-    JsonElement videos = root.GetProperty("songs");
-    return (
-        videos.EnumerateArray().ToDictionary(
-            k => k.GetProperty("id").ToString(),
-            v => v.GetProperty("name").ToString()
-        )
-    );
 }
 
 async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string url)
@@ -41,6 +28,13 @@ async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string 
 
 async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
 {
+
+    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
+    var jsonContent = JsonSerializer.Deserialize<Videos>(
+        jsonFile,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+
     if (list.Count == 0)
     {
         return explodeCount;
@@ -50,20 +44,26 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
     {
         var vinfo = await yt.Videos.GetAsync(list[0].Url);
         var vtitle = removeSpecialChar(vinfo.Title);
-        var customName = await getCustomName();
+        var vId = vinfo.Id;
         try
         {
             count++;
-            vtitle = customName.ContainsKey(vinfo.Id) ? customName[vinfo.Id] : vtitle;
+            var v = jsonContent.videos.FirstOrDefault(v => v.id == vinfo.Id);
+            vtitle = v != null ? v.name : vtitle;
             if (File.Exists($@"./{vtitle}.mp3"))
             {
 
                 list.Remove(list[0]);
                 Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
-                continue;
             }
             else
             {
+                if (v == null)
+                {
+                    jsonContent.videos.Add(new Video(vId, vtitle));
+                }
+
+
                 var videolist = await yt.Videos.Streams.GetManifestAsync(list[0].Url);
                 var videoInfo = videolist.GetAudioOnlyStreams().GetWithHighestBitrate();
                 await yt.Videos.Streams.DownloadAsync(videoInfo, $@"./{vtitle}.mp3");
@@ -71,14 +71,31 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                 list.Remove(list[0]);
             }
             await Task.Delay(250);
+
+            // Console.WriteLine(jsonContent.videos.Last());
         }
         catch (System.Exception e)
         {
+            Console.WriteLine(e);
             Console.WriteLine("Boom！");
             Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
             return await download(yt, list, playListLength, count - 1, explodeCount + 1);
         }
     }
+
+    var finalJson = JsonSerializer.Serialize<Videos>(
+        jsonContent,
+        new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.All)
+        }
+    );
+
+    // current directory is in download folder
+    // return to root directory for overwrite data
+    Directory.SetCurrentDirectory($"../");
+    await File.WriteAllTextAsync("./customName.json", finalJson);
+
     return explodeCount;
 }
 
