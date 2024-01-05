@@ -7,7 +7,7 @@ using System.Text.Unicode;
 
 string removeSpecialChar(string input)
 {
-    foreach (var item in new string[] { @"*", @"/", "\n", "\"", "|", ":", "?" })
+    foreach (var item in new string[] { @"*", @"/", "\n", "\"", "|", ":", "?","*" })
     {
         input = input.Replace(item, "");
     }
@@ -48,8 +48,8 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         try
         {
             count++;
-            var v = jsonContent.videos.FirstOrDefault(v => v.id == vinfo.Id);
-            vtitle = v != null ? v.name : vtitle;
+            var v = jsonContent?.videos.FirstOrDefault(v => v.id == vinfo.Id);
+            vtitle = removeSpecialChar(v?.name ?? vtitle);
             if (File.Exists($@"./{vtitle}.mp3"))
             {
 
@@ -60,7 +60,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
             {
                 if (v == null)
                 {
-                    jsonContent.videos.Add(new Video(vId, vtitle));
+                    jsonContent?.videos.Add(new Video(vId, vtitle));
                 }
 
 
@@ -70,7 +70,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                 Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
                 list.Remove(list[0]);
             }
-            await Task.Delay(250);
+            // await Task.Delay(250);
 
             // Console.WriteLine(jsonContent.videos.Last());
         }
@@ -83,18 +83,26 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         }
     }
 
-    var finalJson = JsonSerializer.Serialize<Videos>(
-        jsonContent,
-        new JsonSerializerOptions
+    if (jsonContent != null)
+    {
+        jsonContent.videos.Sort((Video a, Video b) =>
         {
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.All)
-        }
-    );
+            return a.name.CompareTo(b.name);
+        });
+        
+        var finalJson = JsonSerializer.Serialize<Videos>(
+            jsonContent,
+            new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.All)
+            }
+        );
 
-    // current directory is in download folder
-    // return to root directory for overwrite data
-    Directory.SetCurrentDirectory($"../");
-    await File.WriteAllTextAsync("./customName.json", finalJson);
+        // current directory is in download folder
+        // return to root directory for overwrite data
+        Directory.SetCurrentDirectory($"../");
+        await File.WriteAllTextAsync("./customName.json", finalJson);
+    }
 
     return explodeCount;
 }
