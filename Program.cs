@@ -1,13 +1,15 @@
 ﻿using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
+using YoutubeExplode.Converter;
 using YoutubeExplode.Playlists;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Text.RegularExpressions;
 
 string removeSpecialChar(string input)
 {
-    foreach (var item in new string[] { @"*", @"/", "\n", "\"", "|", ":", "?","*" })
+    foreach (var item in new string[] { @"*", @"/", "\n", "\"", "|", ":", "?", "*" })
     {
         input = input.Replace(item, "");
     }
@@ -24,6 +26,33 @@ async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string 
         { "owner", playlist.Author?.ChannelTitle! }
     };
     return info;
+}
+
+void annotateMp3Tag(string filePath, string vTitle)
+{
+    string pattern = @"\[(.*?)\]";
+    var matches = Regex.Matches(vTitle, pattern);
+    // Console.WriteLine(string.Join(", ", contributors));
+
+    if (matches.Any())
+    {
+        try
+        {
+            var contributors = matches.Select(match => match.Groups[1].Value);
+
+            TagLib.Id3v2.Tag.DefaultVersion = 4;
+            TagLib.Id3v2.Tag.ForceDefaultVersion = true;
+
+            using TagLib.File mp3 = TagLib.File.Create(filePath);
+            mp3.Tag.Performers = contributors.ToArray();
+            mp3.Save();
+        }
+        catch (System.Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
 }
 
 async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
@@ -43,16 +72,18 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
     while (list.Count > 0)
     {
         var vinfo = await yt.Videos.GetAsync(list[0].Url);
-        var vtitle = removeSpecialChar(vinfo.Title);
+        var vtitle = vinfo.Title;
         var vId = vinfo.Id;
+
         try
         {
             count++;
             var v = jsonContent?.videos.FirstOrDefault(v => v.id == vinfo.Id);
             vtitle = removeSpecialChar(v?.name ?? vtitle);
-            if (File.Exists($@"./{vtitle}.mp3"))
+            var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
+            if (File.Exists(filePath))
             {
-
+                annotateMp3Tag(filePath, vtitle);
                 list.Remove(list[0]);
                 Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
             }
@@ -63,11 +94,16 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                     jsonContent?.videos.Add(new Video(vId, vtitle));
                 }
 
-
-                var videolist = await yt.Videos.Streams.GetManifestAsync(list[0].Url);
-                var videoInfo = videolist.GetAudioOnlyStreams().GetWithHighestBitrate();
-                await yt.Videos.Streams.DownloadAsync(videoInfo, $@"./{vtitle}.mp3");
-                Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
+                await yt.Videos.DownloadAsync(
+                    vId,
+                    new ConversionRequestBuilder(filePath)
+                    .SetContainer(Container.Mp3)
+                    .SetPreset(ConversionPreset.Medium)
+                    .Build()
+                );
+                Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
+                annotateMp3Tag(filePath, vtitle);
+                Console.WriteLine($"{filePath.Split('/').Last()} ok！\n{count}/{playListLength}\n");
                 list.Remove(list[0]);
             }
             // await Task.Delay(250);
@@ -89,7 +125,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         {
             return a.name.CompareTo(b.name);
         });
-        
+
         var finalJson = JsonSerializer.Serialize<Videos>(
             jsonContent,
             new JsonSerializerOptions
@@ -147,5 +183,29 @@ async Task main()
     var t2 = DateTime.UtcNow;
     Console.WriteLine($"執行時間: {t2 - t1}");
 }
-
 await main();
+
+
+async Task check()
+{
+    var mp3s = Directory.GetFiles("./YT-BBBGGGMMM").Select(m => m.Split('\\').Last().Split(".").First());
+
+
+    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
+    var jsonContent = JsonSerializer.Deserialize<Videos>(
+        jsonFile,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+
+    var v = jsonContent!.videos.Select(v => v.name.Split("]").Last().Trim());
+
+    var diff = v.Except(mp3s);
+
+    Console.WriteLine($"[{string.Join(",", diff)}]");
+}
+// await check();
+
+
+
+
+
