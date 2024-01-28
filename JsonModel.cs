@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
+using AngleSharp.Common;
 
 class Videos
 {
     [JsonPropertyName("videos")]
-    public List<Video> videos { get; set; }
+    public List<Video> items { get; set; }
 }
 
 
@@ -17,14 +18,19 @@ class Video
     [JsonPropertyName("name")]
     public string name { get; set; }
 
-    public Video(string id, string name)
+
+    [JsonPropertyName("comment")]
+    public string? comment { get; set; }
+
+    public Video(string id, string name, string? comment)
     {
         this.id = id;
         this.name = name;
+        this.comment = comment;
     }
 
     public override string ToString()
     {
-        return $"id={id}, name={name}";
+        return $"{GetType().Name}(id={id}, name={name}, description={comment})";
     }
 }

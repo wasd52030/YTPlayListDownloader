@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text.RegularExpressions;
+using System.CommandLine;
 
 string removeSpecialChar(string input)
 {
@@ -28,7 +29,7 @@ async Task<Dictionary<string, string>> getPlayListInfo(YoutubeClient yt, string 
     return info;
 }
 
-void annotateMp3Tag(string filePath, string vTitle)
+void annotateMp3Tag(string filePath, string vTitle, string? comment)
 {
     string pattern = @"\[(.*?)\]";
     var matches = Regex.Matches(vTitle, pattern);
@@ -45,6 +46,10 @@ void annotateMp3Tag(string filePath, string vTitle)
 
             using TagLib.File mp3 = TagLib.File.Create(filePath);
             mp3.Tag.Performers = contributors.ToArray();
+            if (comment != null)
+            {
+                mp3.Tag.Comment = comment;
+            }
             mp3.Save();
         }
         catch (System.Exception e)
@@ -78,12 +83,12 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         try
         {
             count++;
-            var v = jsonContent?.videos.FirstOrDefault(v => v.id == vinfo.Id);
+            var v = jsonContent?.items.FirstOrDefault(v => v.id == vinfo.Id);
             vtitle = removeSpecialChar(v?.name ?? vtitle);
             var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
             if (File.Exists(filePath))
             {
-                annotateMp3Tag(filePath, vtitle);
+                annotateMp3Tag(filePath, vtitle, v?.comment);
                 list.Remove(list[0]);
                 Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
             }
@@ -91,7 +96,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
             {
                 if (v == null)
                 {
-                    jsonContent?.videos.Add(new Video(vId, vtitle));
+                    jsonContent?.items.Add(new Video(vId, vtitle, null));
                 }
 
                 await yt.Videos.DownloadAsync(
@@ -102,7 +107,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                     .Build()
                 );
                 Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
-                annotateMp3Tag(filePath, vtitle);
+                annotateMp3Tag(filePath, vtitle,v?.comment);
                 Console.WriteLine($"{filePath.Split('/').Last()} ok！\n{count}/{playListLength}\n");
                 list.Remove(list[0]);
             }
@@ -121,7 +126,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
 
     if (jsonContent != null)
     {
-        jsonContent.videos.Sort((Video a, Video b) =>
+        jsonContent.items.Sort((Video a, Video b) =>
         {
             return a.name.CompareTo(b.name);
         });
@@ -144,7 +149,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
 }
 
 //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
-async Task main()
+async Task downloadMain()
 {
     Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -183,10 +188,9 @@ async Task main()
     var t2 = DateTime.UtcNow;
     Console.WriteLine($"執行時間: {t2 - t1}");
 }
-await main();
 
 
-async Task check()
+async Task checkMain()
 {
     var mp3s = Directory.GetFiles("./YT-BBBGGGMMM").Select(m => m.Split('\\').Last().Split(".").First());
 
@@ -197,13 +201,38 @@ async Task check()
         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
     );
 
-    var v = jsonContent!.videos.Select(v => v.name.Split("]").Last().Trim());
+    var v = jsonContent!.items.Select(v => v.name.Split("]").Last().Trim());
 
     var diff = v.Except(mp3s);
 
     Console.WriteLine($"[{string.Join(",", diff)}]");
 }
-// await check();
+
+async Task Main()
+{
+    // root command
+    var rootCommand = new RootCommand("youtube播放清單下載");
+
+    // download command
+    var downloadCommand = new Command(name: "download", description: "下載");
+    rootCommand.AddCommand(downloadCommand);
+    downloadCommand.SetHandler(async () =>
+    {
+        await downloadMain();
+    });
+
+    // check command
+    var statCommand = new Command(name: "check", description: "檢查");
+    rootCommand.AddCommand(statCommand);
+    statCommand.SetHandler(async () =>
+    {
+        await checkMain();
+    });
+
+    await rootCommand.InvokeAsync(args);
+}
+
+await Main();
 
 
 
