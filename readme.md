@@ -7,3 +7,14 @@
 基於前面的原因，期末讀一讀就跑來搞這玩意了，以後要用的話只要載.net6 runtime，之後點開執行檔就完事了，舒服。
 
 對了，dotnet在開源之後寫起來真滴舒服XD
+
+## usage
+Commands:
+  - download: 下載給定的播放清單網址中所有的影片，並將名稱、youtube video id寫入`customName.json`，方便往後查閱
+      - Example
+          - dotnet run download youtubePlaylistURL
+          - YTPlayListDownloader download youtubePlaylistURL
+  - diff : 查閱下載下來的東西跟`customName.json`裡面紀錄的東西的差異
+      - Example
+          - dotnet run diff 
+          - YTPlayListDownloader diff
