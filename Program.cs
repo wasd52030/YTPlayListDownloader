@@ -33,8 +33,7 @@ void annotateMp3Tag(string filePath, string vTitle, string? comment)
 {
     string pattern = @"\[(.*?)\]";
     var matches = Regex.Matches(vTitle, pattern);
-    // Console.WriteLine(string.Join(", ", contributors));
-
+    
     if (matches.Any())
     {
         try
