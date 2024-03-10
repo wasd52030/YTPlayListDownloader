@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-		<Content Include="customName.json">
+		<Content Include="customTitle.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
