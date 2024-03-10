@@ -62,7 +62,7 @@ void annotateMp3Tag(string filePath, string vTitle, string? comment)
 async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
 {
 
-    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
+    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
     var jsonContent = JsonSerializer.Deserialize<Videos>(
         jsonFile,
         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
@@ -83,7 +83,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         {
             count++;
             var v = jsonContent?.items.FirstOrDefault(v => v.id == vinfo.Id);
-            vtitle = removeSpecialChar(v?.name ?? vtitle);
+            vtitle = removeSpecialChar(v?.title ?? vtitle);
             var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
             if (File.Exists(filePath))
             {
@@ -127,7 +127,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
     {
         jsonContent.items.Sort((Video a, Video b) =>
         {
-            return a.name.CompareTo(b.name);
+            return a.title.CompareTo(b.title);
         });
 
         var finalJson = JsonSerializer.Serialize<Videos>(
@@ -141,7 +141,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
         // current directory is in download folder
         // return to root directory for overwrite data
         Directory.SetCurrentDirectory($"../");
-        await File.WriteAllTextAsync("./customName.json", finalJson);
+        await File.WriteAllTextAsync("./customTitle.json", finalJson);
     }
 
     return explodeCount;
@@ -178,22 +178,35 @@ async Task downloadMain(string url)
 }
 
 
-async Task checkMain()
+async Task checkMain(string url)
 {
-    var mp3s = Directory.GetFiles("./YT-BBBGGGMMM").Select(m => m.Split('\\').Last().Split(".").First());
+    Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+    // reference -> https://github.com/Tyrrrz/YoutubeExplode
+    var yt = new YoutubeClient();
+
+    // string url = "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip";
+    var playListInfo = await getPlayListInfo(yt, url);
+
+    string name = $"YT-{playListInfo["title"]}";
+
+    var mp3s = Directory.GetFiles(name).Select(m => m.Split('\\').Last().Split(".").First());
 
 
-    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customName.json"));
+    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
     var jsonContent = JsonSerializer.Deserialize<Videos>(
         jsonFile,
         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
     );
 
-    var v = jsonContent!.items.Select(v => v.name.Split("]").Last().Trim());
+    var v = jsonContent!.items.Select(v => v.title.Split("]").Last().Trim());
 
     var diff = v.Except(mp3s);
 
-    Console.WriteLine($"[{string.Join(",", diff)}]");
+    // Console.WriteLine($"[\n{string.Join(",\n", diff)}\n]");
+    Console.WriteLine("[");
+    foreach (var item in diff) { Console.WriteLine($"  {item},"); }
+    Console.WriteLine("]");
 }
 
 async Task Main()
@@ -205,7 +218,7 @@ async Task Main()
     var downloadCommand = new Command(name: "download", description: "下載");
 
     var playlistOption = new Option<string>
-    (name: "--playlist",
+    (aliases: new string[] { "--playlist", "--pl" },
     description: "youtube playlist url",
     getDefaultValue: () => "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip");
 
@@ -219,12 +232,15 @@ async Task Main()
     }, playlistOption);
 
     // check command
-    var statCommand = new Command(name: "check", description: "檢查");
-    rootCommand.AddCommand(statCommand);
-    statCommand.SetHandler(async () =>
+    var statCommand = new Command(name: "check", description: "檢查")
     {
-        await checkMain();
-    });
+        playlistOption
+    };
+    rootCommand.AddCommand(statCommand);
+    statCommand.SetHandler(async (playlistOption) =>
+    {
+        await checkMain(playlistOption);
+    }, playlistOption);
 
     await rootCommand.InvokeAsync(args);
 }
