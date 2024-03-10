@@ -33,7 +33,7 @@ void annotateMp3Tag(string filePath, string vTitle, string? comment)
 {
     string pattern = @"\[(.*?)\]";
     var matches = Regex.Matches(vTitle, pattern);
-    
+
     if (matches.Any())
     {
         try
@@ -106,7 +106,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                     .Build()
                 );
                 Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
-                annotateMp3Tag(filePath, vtitle,v?.comment);
+                annotateMp3Tag(filePath, vtitle, v?.comment);
                 Console.WriteLine($"{filePath.Split('/').Last()} ok！\n{count}/{playListLength}\n");
                 list.Remove(list[0]);
             }
@@ -148,7 +148,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
 }
 
 //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
-async Task downloadMain()
+async Task downloadMain(string url)
 {
     Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -156,21 +156,10 @@ async Task downloadMain()
     // reference -> https://github.com/Tyrrrz/YoutubeExplode
     var yt = new YoutubeClient();
 
-    string url = "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip";
+    // string url = "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip";
     var playListInfo = await getPlayListInfo(yt, url);
-    Console.Write(
-        $"請輸入Youtube PlayList網址，預設為{playListInfo["owner"].Replace("by", "").Trim()}的{playListInfo["title"]}: "
-    );
-    string? userInput = Console.ReadLine();
-    string name = $"YT-{playListInfo["title"]}";
 
-    if (!string.IsNullOrEmpty(userInput))
-    {
-        url = userInput;
-        playListInfo = await getPlayListInfo(yt, url);
-        name = $"YT-{playListInfo["title"]}";
-    }
-    name = removeSpecialChar(name);
+    string name = $"YT-{playListInfo["title"]}";
 
     if (!Directory.Exists($"./{name}"))
     {
@@ -214,11 +203,20 @@ async Task Main()
 
     // download command
     var downloadCommand = new Command(name: "download", description: "下載");
+
+    var playlistOption = new Option<string>
+    (name: "--playlist",
+    description: "youtube playlist url",
+    getDefaultValue: () => "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip");
+
+    downloadCommand.Add(playlistOption);
     rootCommand.AddCommand(downloadCommand);
-    downloadCommand.SetHandler(async () =>
+
+    downloadCommand.SetHandler(async (playlistOption) =>
     {
-        await downloadMain();
-    });
+        Console.WriteLine(playlistOption);
+        await downloadMain(playlistOption);
+    }, playlistOption);
 
     // check command
     var statCommand = new Command(name: "check", description: "檢查");
