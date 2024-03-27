@@ -9,14 +9,13 @@
 對了，dotnet在開源之後寫起來真滴舒服XD
 
 ## usage
-Commands:
-  - download: 下載給定的播放清單網址中所有的影片，並將名稱、youtube video id寫入`customName.json`，方便往後查閱
-        - parameters:
-              - --pl: youtube播放清單網址，預設值為[這組](https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip)
-      - Example
-          - dotnet run download --pl youtubePlaylistURL
-          - YTPlayListDownloader download --pl youtubePlaylistURL
-  - check : 查閱下載下來的東西跟`customName.json`裡面紀錄的東西的差異
-      - Example
-          - dotnet run check 
-          - YTPlayListDownloader check
+- download: 下載給定的播放清單網址中所有的影片，並將名稱、youtube video id寫入`customName.json`，方便往後查閱、自訂
+  - parameters:  	
+    - --pl: youtube播放清單網址，預設值為
+  - Example
+    - dotnet run download --pl youtubePlaylistURL
+    - YTPlayListDownloader download --pl youtubePlaylistURL
+- check : 查閱下載下來的東西跟`customName.json`裡面紀錄的東西的差異
+	- Example
+		- dotnet run check
+		-  YTPlayListDownloader check
