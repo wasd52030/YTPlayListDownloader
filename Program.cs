@@ -34,29 +34,30 @@ void annotateMp3Tag(string filePath, string vTitle, string? comment)
     string pattern = @"\[(.*?)\]";
     var matches = Regex.Matches(vTitle, pattern);
 
-    if (matches.Any())
+    try
     {
-        try
+        TagLib.Id3v2.Tag.DefaultVersion = 4;
+        TagLib.Id3v2.Tag.ForceDefaultVersion = true;
+
+        using TagLib.File mp3 = TagLib.File.Create(filePath);
+
+        if (matches.Any())
         {
             var contributors = matches.Select(match => match.Groups[1].Value);
-
-            TagLib.Id3v2.Tag.DefaultVersion = 4;
-            TagLib.Id3v2.Tag.ForceDefaultVersion = true;
-
-            using TagLib.File mp3 = TagLib.File.Create(filePath);
+            
             mp3.Tag.Performers = contributors.ToArray();
-            if (comment != null)
-            {
-                mp3.Tag.Comment = comment;
-            }
-            mp3.Save();
         }
-        catch (System.Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
 
+        if (comment != null)
+        {
+            mp3.Tag.Comment = comment;
+        }
+        mp3.Save();
+    }
+    catch (System.Exception e)
+    {
+        Console.WriteLine(e);
+    }
 }
 
 async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
