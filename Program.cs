@@ -218,6 +218,7 @@ async Task analysisMain()
     );
 
     // reference -> https://ithelp.ithome.com.tw/articles/10195017
+    // reference -> https://brooke2010.github.io/2015/03/11/linq-query/
     var videoContributor = jsonContent!.items
     .SelectMany(v =>
     {
