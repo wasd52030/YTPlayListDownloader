@@ -23,13 +23,13 @@
 -  stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
    - contributor 以中括號的形式標註在`customName.json`的影片紀錄中的title欄位，contributor 跟影片標題以空格分開
      - Example
-      ```json
-      {
-        "id": "youtube video id",
-        "title": "[contributor1][contributor2] video title",
-        "comment": null
-      }
-      ```
+        ```json
+        {
+          "id": "youtube video id",
+          "title": "[contributor1][contributor2] video title",
+          "comment": null
+        }
+        ```
    - Command Example
      - dotnet run stat
      -  YTPlayListDownloader stat
