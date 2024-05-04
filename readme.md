@@ -12,10 +12,24 @@
 - download: 下載給定的播放清單網址中所有的影片，並將名稱、youtube video id寫入`customName.json`，方便往後查閱、自訂
   - parameters:  	
     - --pl: youtube播放清單網址，預設值為
-  - Example
+  - Command Example
     - dotnet run download --pl youtubePlaylistURL
     - YTPlayListDownloader download --pl youtubePlaylistURL
 - check : 查閱下載下來的東西跟`customName.json`裡面紀錄的東西的差異
-	- Example
+	- Command Example
 		- dotnet run check
 		-  YTPlayListDownloader check
+  
+-  stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
+   - contributor 以中括號的形式標註在`customName.json`的影片紀錄中的title欄位，contributor 跟影片標題以空格分開
+     - Example
+      ```json
+      {
+        "id": "youtube video id",
+        "title": "[contributor1][contributor2] video title",
+        "comment": null
+      }
+      ```
+   - Command Example
+     - dotnet run stat
+     -  YTPlayListDownloader stat
