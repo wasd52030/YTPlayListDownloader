@@ -113,7 +113,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                 list.Remove(list[0]);
                 await Task.Delay(250);
             }
-            
+
         }
         catch (System.Exception e)
         {
@@ -154,7 +154,6 @@ async Task downloadMain(string url)
     // reference -> https://github.com/Tyrrrz/YoutubeExplode
     var yt = new YoutubeClient();
 
-    // string url = "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip";
     var playListInfo = await getPlayListInfo(yt, url);
 
     string name = $"YT-{playListInfo["title"]}";
@@ -183,7 +182,6 @@ async Task checkMain(string url)
     // reference -> https://github.com/Tyrrrz/YoutubeExplode
     var yt = new YoutubeClient();
 
-    // string url = "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip";
     var playListInfo = await getPlayListInfo(yt, url);
 
     string name = $"YT-{playListInfo["title"]}";
@@ -191,20 +189,62 @@ async Task checkMain(string url)
     var mp3s = Directory.GetFiles(name).Select(m => m.Split('\\').Last().Split(".").First());
 
 
+    // reference -> https://github.com/dotnet/runtime/issues/35281
     string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
     var jsonContent = JsonSerializer.Deserialize<Videos>(
         jsonFile,
-        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        }
     );
 
     var v = jsonContent!.items.Select(v => v.title.Split("]").Last().Trim());
 
     var diff = v.Except(mp3s);
 
-    // Console.WriteLine($"[\n{string.Join(",\n", diff)}\n]");
     Console.WriteLine("[");
     foreach (var item in diff) { Console.WriteLine($"  {item},"); }
     Console.WriteLine("]");
+}
+
+async Task analysisMain()
+{
+    string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
+    var jsonContent = JsonSerializer.Deserialize<Videos>(
+        jsonFile,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+
+    // reference -> https://ithelp.ithome.com.tw/articles/10195017
+    var videoContributor = jsonContent!.items
+    .SelectMany(v =>
+    {
+        string pattern = @"\[(.*?)\]";
+        var matches = Regex.Matches(v.title, pattern);
+        return matches.Any() ? matches.Cast<Match>().Select(m => m.Groups[1].Value) : new[] { "unknown" };
+    });
+
+    var stat = videoContributor.GroupBy(contributor => contributor)
+                     .OrderByDescending(item => item.Count())
+                     .ThenBy(item => item.Key)
+                     .ToDictionary(o => o.Key, o => (double)o.Count());
+    stat.Add("total", stat.Values.Sum());
+    var percent = stat.ToDictionary(record => record.Key, record => record.Value / stat["total"]);
+
+    // reference -> https://github.com/dotnet/runtime/issues/35281
+    await File.WriteAllTextAsync(
+        Path.Combine(Directory.GetCurrentDirectory(), $"contributorStat.json"),
+        JsonSerializer.Serialize(
+            new Dictionary<string, Dictionary<string, double>>() { { "統計", stat }, { "占比", percent } },
+            new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            }
+        )
+    );
 }
 
 async Task Main()
@@ -230,15 +270,23 @@ async Task Main()
     }, playlistOption);
 
     // check command
-    var statCommand = new Command(name: "check", description: "檢查")
+    var checkCommand = new Command(name: "check", description: "檢查")
+    {
+        playlistOption
+    };
+    rootCommand.AddCommand(checkCommand);
+    checkCommand.SetHandler(async (playlistOption) =>
+    {
+        await checkMain(playlistOption);
+    }, playlistOption);
+
+    // stat command
+    var statCommand = new Command(name: "stat", description: "統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)")
     {
         playlistOption
     };
     rootCommand.AddCommand(statCommand);
-    statCommand.SetHandler(async (playlistOption) =>
-    {
-        await checkMain(playlistOption);
-    }, playlistOption);
+    statCommand.SetHandler(async (playlistOption) => await analysisMain());
 
     await rootCommand.InvokeAsync(args);
 }
