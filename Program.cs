@@ -113,12 +113,11 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                 list.Remove(list[0]);
                 await Task.Delay(250);
             }
-
-            // Console.WriteLine(jsonContent.videos.Last());
+            
         }
         catch (System.Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"\n{e}");
             Console.WriteLine("Boom！");
             Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
             return await download(yt, list, playListLength, count - 1, explodeCount + 1);
@@ -170,7 +169,7 @@ async Task downloadMain(string url)
 
     var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
     var explodeCount = await download(yt, playList, playList.Count);
-    Console.WriteLine($"共炸了{explodeCount}次");
+    Console.WriteLine($"\n共炸了{explodeCount}次");
 
     var t2 = DateTime.UtcNow;
     Console.WriteLine($"執行時間: {t2 - t1}");
