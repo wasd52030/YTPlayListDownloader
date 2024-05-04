@@ -457,5 +457,4 @@ $RECYCLE.BIN/
 ## publish directory
 dist/
 
-YTBBBGGGMMM/*
-YTBBBGGGMMM/**/*
+**/*/*.mp3
