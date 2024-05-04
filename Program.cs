@@ -44,7 +44,7 @@ void annotateMp3Tag(string filePath, string vTitle, string? comment)
         if (matches.Any())
         {
             var contributors = matches.Select(match => match.Groups[1].Value);
-            
+
             mp3.Tag.Performers = contributors.ToArray();
         }
 
@@ -106,12 +106,13 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
                     .SetPreset(ConversionPreset.Medium)
                     .Build()
                 );
-                Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
+                // Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
                 annotateMp3Tag(filePath, vtitle, v?.comment);
-                Console.WriteLine($"{filePath.Split('/').Last()} ok！\n{count}/{playListLength}\n");
+                var message = $"\r[{count}/{playListLength}] {filePath.Split('/').Last()} ok！";
+                Console.Write(message.PadRight(100 - message.Length));
                 list.Remove(list[0]);
+                await Task.Delay(250);
             }
-            // await Task.Delay(250);
 
             // Console.WriteLine(jsonContent.videos.Last());
         }
@@ -133,10 +134,7 @@ async Task<int> download(YoutubeClient yt, List<PlaylistVideo> list, int playLis
 
         var finalJson = JsonSerializer.Serialize<Videos>(
             jsonContent,
-            new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.All)
-            }
+            new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
         );
 
         // current directory is in download folder
