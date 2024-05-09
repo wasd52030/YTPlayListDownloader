@@ -253,7 +253,8 @@ async Task analysisMain()
     );
 
 
-    var plotSeq = baseSeq.Select(item => new { key = item.Key, count = item.Count() })
+    var plotSeq = baseSeq.Where(item => item.Key != "unknown")
+                         .Select(item => new { key = item.Key, count = item.Count() })
                          .GroupBy(item => item.count)
                          .Select(item =>
                          {
@@ -263,10 +264,10 @@ async Task analysisMain()
                                 seq.Select(item => item.key)
                                    .OrderBy(item => item.Length)
                                    .ThenBy(item => item)
-                                   .Take(2)
+                                   .Take(3)
                              );
 
-                             if (seq.Count() > 2)
+                             if (seq.Count() > 3)
                              {
                                  s = $"{s}, ... 等{seq.Count()}位";
                              }
@@ -274,7 +275,11 @@ async Task analysisMain()
                              var m = item.Count() * item.Key;
                              return (s, m);
                          })
-                         .ToDictionary(item => item.s, item => (double)item.m);
+                         .Concat(
+                            baseSeq.Where(item => item.Key == "unknown")
+                                   .Select(item => (item.Key, item.Count()))
+                            )
+                         .ToDictionary(item => item.Item1, item => (double)item.Item2);
 
     var pie = Plotly.NET.CSharp.Chart.Pie<double, string, string>(
         values: plotSeq.Select(item => item.Value).ToList(),
