@@ -262,7 +262,7 @@ async Task analysisMain()
                                 seq.Select(item => item.key)
                                    .OrderBy(item => item.Length)
                                    .ThenBy(item => item)
-                                   .Take(2) 
+                                   .Take(2)
                              );
 
                              if (seq.Count() > 2)
@@ -280,15 +280,13 @@ async Task analysisMain()
         Labels: plotSeq.Select(item => item.Key).ToList()
     );
 
-    // 詳細資訊請參考 contributorStat.json！
     pie.WithTitle("詳細資訊請參考 contributorStat.json！")
        .WithConfig(
             Plotly.NET.Config.init(
-                // ToImageButtonOptions: ToImageButtonOptions.init(Width: 600, Height: 400, Scale: 10),
                 Responsive: true
             )
         )
-       .SavePNG("contributorStat", Width: 600, Height: 400);
+       .SavePNG("contributorStat", Width: 700, Height: 450);
 }
 
 async Task Main()
