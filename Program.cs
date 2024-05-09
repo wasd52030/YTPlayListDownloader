@@ -232,7 +232,8 @@ async Task analysisMain()
 
     var baseSeq = videoContributor.GroupBy(contributor => contributor)
                                   .OrderByDescending(item => item.Count())
-                                  .ThenBy(item => item.Key.Length);
+                                  .ThenBy(item => item.Key.Length)
+                                  .ThenBy(item => item.Key);
 
     var stat = baseSeq.ToDictionary(o => o.Key, o => (double)o.Count());
     stat.Add("total", stat.Values.Sum());
