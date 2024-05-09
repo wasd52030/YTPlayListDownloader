@@ -7,6 +7,9 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.CommandLine;
+using Plotly.NET.ImageExport;
+using Plotly.NET.ConfigObjects;
+using Plotly.NET;
 
 string removeSpecialChar(string input)
 {
@@ -227,10 +230,11 @@ async Task analysisMain()
         return matches.Any() ? matches.Cast<Match>().Select(m => m.Groups[1].Value) : new[] { "unknown" };
     });
 
-    var stat = videoContributor.GroupBy(contributor => contributor)
-                     .OrderByDescending(item => item.Count())
-                     .ThenBy(item => item.Key)
-                     .ToDictionary(o => o.Key, o => (double)o.Count());
+    var baseSeq = videoContributor.GroupBy(contributor => contributor)
+                                  .OrderByDescending(item => item.Count())
+                                  .ThenBy(item => item.Key.Length);
+
+    var stat = baseSeq.ToDictionary(o => o.Key, o => (double)o.Count());
     stat.Add("total", stat.Values.Sum());
     var percent = stat.ToDictionary(record => record.Key, record => record.Value / stat["total"]);
 
@@ -246,6 +250,45 @@ async Task analysisMain()
             }
         )
     );
+
+
+    var plotSeq = baseSeq.Select(item => new { key = item.Key, count = item.Count() })
+                         .GroupBy(item => item.count)
+                         .Select(item =>
+                         {
+                             var seq = item.Select(item => item);
+                             var s = string.Join(
+                                ", ",
+                                seq.Select(item => item.key)
+                                   .OrderBy(item => item.Length)
+                                   .ThenBy(item => item)
+                                   .Take(2) 
+                             );
+
+                             if (seq.Count() > 2)
+                             {
+                                 s = $"{s}, ... 等{seq.Count()}位";
+                             }
+
+                             var m = item.Count() * item.Key;
+                             return (s, m);
+                         })
+                         .ToDictionary(item => item.s, item => (double)item.m);
+
+    var pie = Plotly.NET.CSharp.Chart.Pie<double, string, string>(
+        values: plotSeq.Select(item => item.Value).ToList(),
+        Labels: plotSeq.Select(item => item.Key).ToList()
+    );
+
+    // 詳細資訊請參考 contributorStat.json！
+    pie.WithTitle("詳細資訊請參考 contributorStat.json！")
+       .WithConfig(
+            Plotly.NET.Config.init(
+                // ToImageButtonOptions: ToImageButtonOptions.init(Width: 600, Height: 400, Scale: 10),
+                Responsive: true
+            )
+        )
+       .SavePNG("contributorStat", Width: 600, Height: 400);
 }
 
 async Task Main()
