@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Install cjk font
-      run: apt-get install fonts-noto-cjk
+      run: sudo apt-get install fonts-noto-cjk
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
