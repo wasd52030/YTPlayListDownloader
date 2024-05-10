@@ -19,6 +19,6 @@ jobs:
     steps:
     - name: Install Microsoft JhengHei font
       run: |
-        cd /home/runner/work
+        cd /home/runner/work/YTPlayListDownloader
         ls
       shell: bash
