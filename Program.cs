@@ -293,6 +293,7 @@ async Task analysisMain()
             )
         )
        .SavePNG("contributorStat", Width: 700, Height: 450);
+
 }
 
 async Task Main()
