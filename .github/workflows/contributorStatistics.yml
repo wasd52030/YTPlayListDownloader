@@ -19,7 +19,7 @@ jobs:
     steps:
     - name: Install Microsoft JhengHei font
       run: |
-        cp /home/runner/work/YTPlayListDownloader/YTPlayListDownloaderMicrosoftJhengHei.ttf /usr/share/fonts/truetype
+        ls
         sudo fc-cache -f -v
         shell: bash
     - uses: actions/checkout@v4
