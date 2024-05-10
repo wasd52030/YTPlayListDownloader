@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install CNS11643 fonts
+    - name: Install Microsoft JhengHei font
       run: |
-        cp MicrosoftJhengHei.ttf /usr/share/fonts/truetype
+        cp /home/runner/work/YTPlayListDownloader/YTPlayListDownloaderMicrosoftJhengHei.ttf /usr/share/fonts/truetype
         sudo fc-cache -f -v
         shell: bash
     - uses: actions/checkout@v4
