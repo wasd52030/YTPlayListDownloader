@@ -19,29 +19,8 @@ jobs:
     steps:
     - name: Install Microsoft JhengHei font
       run: |
-        if [ ! -d "$HOME/.fonts" ] ; then
-            mkdir $HOME/.fonts
-            echo -e "Directory ~/.fonts/ created.\n"
-        fi
-        wget -O SourceHanSansHWSC.zip https://github.com/adobe-fonts/source-han-sans/releases/download/2.004R/SourceHanSansHWSC.zip
-        echo "Download completed"
-        
-        unzip SourceHanSansHWSC.zip
-        echo "unzip completed"
-
-        # copy fonts to font directory
-        cp -i OTF/SimplifiedChineseHW/SourceHanSansHWSC-Regular.otf $HOME/share/fonts/SourceHanSans
-        cp -i OTF/SimplifiedChineseHW/SourceHanSansHWSC-Bold.otf $HOME/share/fonts/SourceHanSans
-        echo "copy completed"
-        
-        sudo fc-cache -fv
-
-        if [ -e "SourceHanSansHWSC.zip" ] ; then
-            rm SourceHanSansHWSC.zip  
-        fi
-        if [ -d "Open_Data" ] ; then
-            rm -r Open_Data
-        fi
+        cp  /home/runner/work/YTPlayListDownloader/YTPlayListDownloader/MicrosoftJhengHei.ttf /usr/share/fonts/truetype
+        fc-cache -f -v
       shell: bash
     - uses: actions/checkout@v4
     - name: Setup .NET
