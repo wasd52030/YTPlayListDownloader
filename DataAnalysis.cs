@@ -3,6 +3,9 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using Plotly.NET.ImageExport;
 using Plotly.NET;
+using Plotly.NET.LayoutObjects;
+using Plotly.NET.CSharp;
+using Plotly.NET.TraceObjects;
 
 class DataAnalysis
 {
@@ -92,12 +95,13 @@ class DataAnalysis
             Labels: plotSeq.Select(item => item.Key).ToList()
         );
 
-        pie.WithTitle("詳細資訊請參考 contributorStat.json！")
-           .WithConfig(
-                Plotly.NET.Config.init(
-                    Responsive: true
-                )
-            )
+        var MicrosoftJhengHei = StyleParam.FontFamily.Custom.NewCustom("./MicrosoftJhengHei.ttf");
+        var layoutTemplate = Layout.init<IConvertible>(
+            Title: Title.init("詳細資訊請參考 contributorStat.json！"),
+            Font: Font.init(MicrosoftJhengHei)
+         );
+        // Font.init(MicrosoftJhengHei)
+        pie.WithLayout(layoutTemplate)
            .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
