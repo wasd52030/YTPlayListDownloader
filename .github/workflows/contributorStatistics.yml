@@ -17,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install Microsoft JhengHei font
-      run: |
-        cd /home/runner/work/YTPlayListDownloader/YTPlayListDownloader
-        ls
+    - name: Install cjk font
+      run: sudo apt-get install fonts-noto-cjk
       shell: bash
