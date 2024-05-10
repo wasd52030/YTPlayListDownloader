@@ -94,14 +94,15 @@ class DataAnalysis
             values: plotSeq.Select(item => item.Value).ToList(),
             Labels: plotSeq.Select(item => item.Key).ToList()
         );
+        
 
         var MicrosoftJhengHei = StyleParam.FontFamily.Custom.NewCustom("./MicrosoftJhengHei.ttf");
         var layoutTemplate = Layout.init<IConvertible>(
-            Title: Title.init("詳細資訊請參考 contributorStat.json！"),
-            Font: Font.init(MicrosoftJhengHei)
+            Title: Title.init("詳細資訊請參考 contributorStat.json！")
+            // Font: Font.init(MicrosoftJhengHei)
          );
-        // Font.init(MicrosoftJhengHei)
-        pie.WithLayout(layoutTemplate)
+        
+        pie.WithTitle("詳細資訊請參考 contributorStat.json！")
            .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
