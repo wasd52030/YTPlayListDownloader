@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Install Microsoft JhengHei font
-    - uses: RisingInIris2017/cjk-fonts-action@v1
+      uses: RisingInIris2017/cjk-fonts-action@v1
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
