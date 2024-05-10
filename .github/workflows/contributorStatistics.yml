@@ -18,7 +18,10 @@ jobs:
 
     steps:
     - name: Install CNS11643 fonts
-      uses: RisingInIris2017/cjk-fonts-action@v1
+      run: |
+        cp MicrosoftJhengHei.ttf /usr/share/fonts/truetype
+        sudo fc-cache -f -v
+        shell: bash
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
