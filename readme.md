@@ -33,3 +33,5 @@
    - Command Example
      - dotnet run stat
      -  YTPlayListDownloader stat
+
+**本專案有加github actions 做 contributor 統計自動更新，在動程式之前記得做 pull 之類的動作**
