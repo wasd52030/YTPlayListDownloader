@@ -28,3 +28,5 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Update
+      run: dotnet /home/runner/work/YTPlayListDownloader/YTPlayListDownloader/bin/Release/net6.0/YTPlayListDownloader.dll stat
