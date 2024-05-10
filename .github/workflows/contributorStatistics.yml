@@ -17,9 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: hms5232/install-CNS11643-fonts-action@main
-      with:
-        download-flag: '-v'  # wget 預設值，代表 verbose
+    - name: Install CNS11643 fonts
+      uses: RisingInIris2017/cjk-fonts-action@v1
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
