@@ -120,7 +120,7 @@ class Download
                     );
                     // Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
                     AnnotateMp3Tag(filePath, vtitle, v?.comment);
-                    var message = $"[{count}/{playListLength}] {filePath.Split('/').Last()} ok！";
+                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ok！";
                     Console.WriteLine(message);
                     list.Remove(list[0]);
                     await Task.Delay(250);
