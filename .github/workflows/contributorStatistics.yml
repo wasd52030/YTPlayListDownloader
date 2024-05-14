@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: load resources
+      uses: actions/checkout@v4
     - name: Install cjk font
       run: sudo apt-get install fonts-noto-cjk
     - uses: actions/checkout@v4
