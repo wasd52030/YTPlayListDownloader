@@ -6,6 +6,9 @@ name: contributor statistics
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - .github/workflows/contributorStatistics.yml
+      - customTitle.json
   pull_request:
     branches: [ "master" ]
   schedule: # execute every 24 hours
