@@ -41,6 +41,18 @@ async Task Main()
     rootCommand.AddCommand(statCommand);
     statCommand.SetHandler(async () => await DataAnalysis.Invoke());
 
+    // update command
+    var updateCommand = new Command(name: "update", description: "自動取得在播放清單中的影片資訊，省得手動輸入")
+    {
+        playlistOption
+    };
+    rootCommand.AddCommand(updateCommand);
+    updateCommand.SetHandler(async (playlistOption) =>
+    {
+        var at = new AutoTitle(playlistOption);
+        await at.Invoke();
+    }, playlistOption);
+
     await rootCommand.InvokeAsync(args);
 }
 
