@@ -14,6 +14,7 @@ class AutoTitle : Collector
                                 .Select(video => new Video(video.Id, video.Title, ""))
                                 .Concat(videos)
                                 .ToList();
+                                
         Console.WriteLine($"origin = {videos.Count()}, updated = {newVideos.Count()}");
         return newVideos;
     }
