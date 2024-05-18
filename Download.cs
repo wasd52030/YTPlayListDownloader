@@ -7,41 +7,11 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text.RegularExpressions;
 
-class Download
+internal class Download : Collector
 {
+    public Download(string url) : base(url) { }
 
-    // reference -> https://github.com/Tyrrrz/YoutubeExplode
-    private readonly YoutubeClient yt = new();
-    readonly string url;
-
-    public Download(string url)
-    {
-        this.url = url;
-    }
-
-    string removeSpecialChar(string input)
-    {
-        foreach (var item in new string[] { @"*", @"/", "\n", "\"", "|", ":", "?", "*" })
-        {
-            input = input.Replace(item, "");
-        }
-
-        return input;
-    }
-
-    public static async Task<Dictionary<string, string>> getPlayListInfo(string url)
-    {
-        var yt = new YoutubeClient();
-        var playlist = await yt.Playlists.GetAsync(url);
-        Dictionary<string, string> info = new Dictionary<string, string>
-        {
-            { "title", playlist.Title },
-            { "owner", playlist.Author?.ChannelTitle! }
-        };
-        return info;
-    }
-
-    void AnnotateMp3Tag(string filePath, string vTitle, string? comment)
+    private static void AnnotateMp3Tag(string filePath, string vTitle, string? comment)
     {
         string pattern = @"\[(.*?)\]";
         var matches = Regex.Matches(vTitle, pattern);
@@ -72,7 +42,7 @@ class Download
         }
     }
 
-    async Task<int> downlaod(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
+    private async Task<int> Downlaod(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
     {
 
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
@@ -95,8 +65,8 @@ class Download
             try
             {
                 count++;
-                var v = jsonContent?.items.FirstOrDefault(v => v.id == vinfo.Id);
-                vtitle = removeSpecialChar(v?.title ?? vtitle);
+                var v = jsonContent?.items.FirstOrDefault(v => v.Id == vinfo.Id);
+                vtitle = RemoveSpecialChar(v?.Title ?? vtitle);
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
                 if (File.Exists(filePath))
                 {
@@ -132,7 +102,7 @@ class Download
                 Console.WriteLine($"\n{e}");
                 Console.WriteLine("Boom！");
                 Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
-                return await downlaod(list, playListLength, count - 1, explodeCount + 1);
+                return await Downlaod(list, playListLength, count - 1, explodeCount + 1);
             }
         }
 
@@ -140,7 +110,7 @@ class Download
         {
             jsonContent.items.Sort((Video a, Video b) =>
             {
-                return a.title.CompareTo(b.title);
+                return a.Title.CompareTo(b.Title);
             });
 
             var finalJson = JsonSerializer.Serialize<Videos>(
@@ -158,13 +128,13 @@ class Download
     }
 
     //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
-    public async Task Invoke()
+    public override async Task Invoke()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         var t1 = DateTime.UtcNow;
 
-        var playListInfo = await getPlayListInfo(url);
+        var playListInfo = await GetPlayListInfo(url);
 
         string name = $"YT-{playListInfo["title"]}";
 
@@ -177,7 +147,7 @@ class Download
 
 
         var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
-        var explodeCount = await downlaod(playList, playList.Count);
+        var explodeCount = await Downlaod(playList, playList.Count);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
         var t2 = DateTime.UtcNow;

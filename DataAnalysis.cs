@@ -27,7 +27,7 @@ class DataAnalysis
         .SelectMany(v =>
         {
             string pattern = @"\[(.*?)\]";
-            var matches = Regex.Matches(v.title, pattern);
+            var matches = Regex.Matches(v.Title, pattern);
             return matches.Any() ? matches.Cast<Match>().Select(m => m.Groups[1].Value) : new[] { "unknown" };
         });
 

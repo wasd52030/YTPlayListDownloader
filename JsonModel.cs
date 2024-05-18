@@ -12,10 +12,10 @@ class Video
 {
 
     [JsonPropertyName("id")]
-    public string id { get; set; }
+    public string Id { get; set; }
 
     [JsonPropertyName("title")]
-    public string title { get; set; }
+    public string Title { get; set; }
 
 
     [JsonPropertyName("comment")]
@@ -23,13 +23,13 @@ class Video
 
     public Video(string id, string title, string? comment)
     {
-        this.id = id;
-        this.title = title;
+        this.Id = id;
+        this.Title = title;
         this.comment = comment;
     }
 
     public override string ToString()
     {
-        return $"{GetType().Name}(id={id}, name={title}, description={comment})";
+        return $"{GetType().Name}(id={Id}, name={Title}, description={comment})";
     }
 }

@@ -8,10 +8,7 @@ class Check
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        // reference -> https://github.com/Tyrrrz/YoutubeExplode
-        var yt = new YoutubeClient();
-
-        var playListInfo = await Download.getPlayListInfo(url);
+        var playListInfo = await Download.GetPlayListInfo(url);
 
         string name = $"YT-{playListInfo["title"]}";
 
@@ -29,7 +26,7 @@ class Check
             }
         );
 
-        var v = jsonContent!.items.Select(v => v.title.Split("]").Last().Trim());
+        var v = jsonContent!.items.Select(v => v.Title.Split("]").Last().Trim());
 
         var diff = v.Except(mp3s);
 
