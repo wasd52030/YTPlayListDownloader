@@ -5,51 +5,52 @@ name: contributor statistics
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
     paths:
       - .github/workflows/contributorStatistics.yml
       - customTitle.json
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
   schedule: # execute every 24 hours
     - cron: "* */24 * * *"
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: load resources
-      uses: actions/checkout@v4
-    - name: Install cjk font
-      run: sudo apt-get install fonts-noto-cjk
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Update statistics
-      run: dotnet /home/runner/work/YTPlayListDownloader/YTPlayListDownloader/bin/Release/net6.0/YTPlayListDownloader.dll stat
-    - name: Commit files
-      id: commit
-      run: |
-        git config --local user.email "nppstcc1001050311@gmail.com"
-        git config --local user.name "sobel"
-        git add --all
-        if [ -n "$(git status --porcelain)" ]; then
-           git commit -m "update contributor statistics" -a
-           echo "{push}={true}" >> $GITHUB_OUTPUT
-        else
-           echo "{push}={false}" >> $GITHUB_OUTPUT
-        fi
-      shell: bash
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-         github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: load resources
+        uses: actions/checkout@v4
+      - name: Install cjk font
+        run: sudo apt-get install fonts-noto-cjk
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      - name: Update video informations
+        run: dotnet /home/runner/work/YTPlayListDownloader/YTPlayListDownloader/bin/Release/net6.0/YTPlayListDownloader.dll update
+      - name: Update statistics
+        run: dotnet /home/runner/work/YTPlayListDownloader/YTPlayListDownloader/bin/Release/net6.0/YTPlayListDownloader.dll stat
+      - name: Commit files
+        id: commit
+        run: |
+          git config --local user.email "nppstcc1001050311@gmail.com"
+          git config --local user.name "sobel"
+          git add --all
+          if [ -n "$(git status --porcelain)" ]; then
+             git commit -m "update contributor statistics" -a
+             echo "{push}={true}" >> $GITHUB_OUTPUT
+          else
+             echo "{push}={false}" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
