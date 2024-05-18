@@ -44,7 +44,7 @@ jobs:
           git config --local user.name "sobel"
           git add --all
           if [ -n "$(git status --porcelain)" ]; then
-             git commit -m "update contributor statistics" -a
+             git commit -m "update data" -a
              echo "{push}={true}" >> $GITHUB_OUTPUT
           else
              echo "{push}={false}" >> $GITHUB_OUTPUT
