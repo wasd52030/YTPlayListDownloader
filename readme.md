@@ -21,7 +21,7 @@
   - Command Example
 		- dotnet run check --pl youtubePlaylistURL
 		-  YTPlayListDownloader check --pl youtubePlaylistURL 
--  stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
+- stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
      - parameters:  	
         
         - --pl: youtube播放清單網址，預設值為 https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip
@@ -37,7 +37,7 @@
      - Command Example
         - dotnet run stat --pl youtubePlaylistURL
         -  YTPlayListDownloader stat --pl youtubePlaylistURL
--  update : 協助將播放清單中的影片資訊統整到`customName.json`
+- update : 協助將播放清單中的影片資訊統整到`customName.json`
     - parameters:  	
       - --pl: youtube播放清單網址，預設值為 https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip
    - Command Example
