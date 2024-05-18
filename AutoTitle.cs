@@ -7,14 +7,14 @@ class AutoTitle : Collector
 {
     public AutoTitle(string url) : base(url) { }
 
-    private async Task<List<Video>> updateAsync(List<Video> videos)
+    private async Task<List<Video>> Update(List<Video> videos)
     {
         var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
         var newVideos = playList.Where(playList => !videos.Any(video => video.Id == playList.Id))
                                 .Select(video => new Video(video.Id, video.Title, ""))
                                 .Concat(videos)
                                 .ToList();
-
+        Console.WriteLine($"origin = {videos.Count()}, updated = {newVideos.Count()}");
         return newVideos;
     }
 
@@ -28,7 +28,7 @@ class AutoTitle : Collector
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         );
 
-        jsonContent.items = await updateAsync(jsonContent.items);
+        jsonContent.items = await Update(jsonContent.items);
 
         if (jsonContent != null)
         {
