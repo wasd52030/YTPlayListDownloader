@@ -136,7 +136,7 @@ internal class Download : Collector
 
         var playListInfo = await GetPlayListInfo(url);
 
-        string name = $"YT-{playListInfo["title"]}";
+        string name = $"YT-{playListInfo.title}";
 
         if (!Directory.Exists($"./{name}"))
         {
@@ -145,9 +145,7 @@ internal class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
 
-
-        var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
-        var explodeCount = await Downlaod(playList, playList.Count);
+        var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
         var t2 = DateTime.UtcNow;
