@@ -30,7 +30,8 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/bin/Debug/net6.0/YTPlayListDownloader.dll",
             "args": [
-                "check"
+                "check",
+                // "--pl","https://www.youtube.com/playlist?list=PLdx_s59BrvfVJdXVitsPHvXavY7Z-NhQx"
             ],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
