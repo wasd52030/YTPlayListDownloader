@@ -58,6 +58,7 @@ internal class Download : Collector
 
         while (list.Count > 0)
         {
+            var t1 = DateTime.UtcNow;
             var vinfo = await yt.Videos.GetAsync(list[0].Url);
             var vtitle = vinfo.Title;
             var vId = vinfo.Id;
@@ -90,7 +91,9 @@ internal class Download : Collector
                     );
                     // Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
                     AnnotateMp3Tag(filePath, vtitle, v?.comment);
-                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ok！";
+
+                    var timeConsuming = DateTime.UtcNow-t1;
+                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} {timeConsuming}";
                     Console.WriteLine(message);
                     list.Remove(list[0]);
                     await Task.Delay(250);
