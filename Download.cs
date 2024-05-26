@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 internal class Download : Collector
 {
@@ -50,6 +51,7 @@ internal class Download : Collector
             jsonFile,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         );
+        Stopwatch watch = new Stopwatch();
 
         if (list.Count == 0)
         {
@@ -58,7 +60,8 @@ internal class Download : Collector
 
         while (list.Count > 0)
         {
-            var t1 = DateTime.UtcNow;
+            watch.Restart();
+
             var vinfo = await yt.Videos.GetAsync(list[0].Url);
             var vtitle = vinfo.Title;
             var vId = vinfo.Id;
@@ -92,8 +95,8 @@ internal class Download : Collector
                     // Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
                     AnnotateMp3Tag(filePath, vtitle, v?.comment);
 
-                    var timeConsuming = DateTime.UtcNow-t1;
-                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} {timeConsuming}";
+                    watch.Stop();
+                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
                     list.Remove(list[0]);
                     await Task.Delay(250);
@@ -135,7 +138,8 @@ internal class Download : Collector
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        var t1 = DateTime.UtcNow;
+        Stopwatch watch = new Stopwatch();
+        watch.Start();
 
         var playListInfo = await GetPlayListInfo(url);
 
@@ -151,7 +155,7 @@ internal class Download : Collector
         var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
-        var t2 = DateTime.UtcNow;
-        Console.WriteLine($"執行時間: {t2 - t1}");
+        watch.Stop();
+        Console.WriteLine($"執行時間: {watch.Elapsed}");
     }
 }
