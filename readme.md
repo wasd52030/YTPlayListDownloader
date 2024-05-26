@@ -15,15 +15,14 @@
   - Command Example
     - dotnet run download --pl youtubePlaylistURL
     - YTPlayListDownloader download --pl youtubePlaylistURL
-- check : 查閱下載下來的東西跟`customName.json`裡面紀錄的東西的差異
+- check : 查閱指定的播放清單的跟`customName.json`裡面紀錄的差異
   - parameters:  	
     - --pl: youtube播放清單網址，預設值為 https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip
   - Command Example
-		- dotnet run check --pl youtubePlaylistURL
-		-  YTPlayListDownloader check --pl youtubePlaylistURL 
+  	- dotnet run check --pl youtubePlaylistURL
+   	- YTPlayListDownloader check --pl youtubePlaylistURL 
 - stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
-     - parameters:  	
-        
+     - parameters:
         - --pl: youtube播放清單網址，預設值為 https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip
       - contributor 以中括號的形式標註在`customName.json`的影片紀錄中的title欄位，contributor 跟影片標題以空格分開
         - Example
