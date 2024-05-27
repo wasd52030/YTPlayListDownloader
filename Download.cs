@@ -8,7 +8,7 @@ using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 
-internal class Download : Collector
+class Download : Collector
 {
     public Download(string url) : base(url) { }
 
