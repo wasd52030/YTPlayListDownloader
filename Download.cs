@@ -74,9 +74,12 @@ class Download : Collector
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
                 if (File.Exists(filePath))
                 {
+                    watch.Stop();
+
                     AnnotateMp3Tag(filePath, vtitle, v?.comment);
                     list.Remove(list[0]);
-                    Console.WriteLine($"{vtitle} ok！\n{count}/{playListLength}\n");
+                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
+                    Console.WriteLine(message);
                 }
                 else
                 {
@@ -85,15 +88,23 @@ class Download : Collector
                         jsonContent?.items.Add(new Video(vId, vtitle, null));
                     }
 
-                    await yt.Videos.DownloadAsync(
-                        vId,
-                        new ConversionRequestBuilder(filePath)
-                        .SetContainer(Container.Mp3)
-                        .SetPreset(ConversionPreset.Medium)
-                        .Build()
-                    );
+                    // await yt.Videos.DownloadAsync(
+                    //     vId,
+                    //     new ConversionRequestBuilder(filePath)
+                    //     .SetContainer(Container.Mp3)
+                    //     .SetPreset(ConversionPreset.Medium)
+                    //     .Build()
+                    // );
                     // Console.WriteLine($"adding {filePath.Split('/').Last()}'s tag......");
-                    AnnotateMp3Tag(filePath, vtitle, v?.comment);
+                    // AnnotateMp3Tag(filePath, vtitle, v?.comment);
+
+                    var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
+                    var videoInfo = videotManifest.GetAudioOnlyStreams()
+                                                  .GetWithHighestBitrate();
+                    var res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
+
+                    using var fileStream=File.Create(filePath);
+                    res.CopyTo(fileStream);
 
                     watch.Stop();
                     var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
