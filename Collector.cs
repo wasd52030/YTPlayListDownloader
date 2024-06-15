@@ -1,7 +1,7 @@
 using YoutubeExplode;
 abstract class Collector
 {
-    // // reference -> https://github.com/Tyrrrz/YoutubeExplode
+    // reference -> https://github.com/Tyrrrz/YoutubeExplode
     protected YoutubeClient yt;
     protected string url;
 
