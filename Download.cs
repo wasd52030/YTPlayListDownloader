@@ -72,6 +72,23 @@ class Download : Collector
                 var v = jsonContent?.items.FirstOrDefault(v => v.Id == vinfo.Id);
                 vtitle = RemoveSpecialChar(v?.Title ?? vtitle);
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
+
+                // youtube現在好像會卡這類影片的自動下載，先直接跳過(現有的相關檔案要備份R)
+                // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
+                // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
+                // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
+                string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
+                if (special.Contains(vId.ToString()))
+                {
+                    watch.Stop();
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
+                    list.Remove(list[0]);
+                    continue;
+                }
+
+
                 if (File.Exists(filePath))
                 {
                     watch.Stop();
@@ -103,7 +120,7 @@ class Download : Collector
                                                   .GetWithHighestBitrate();
                     var res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
 
-                    using var fileStream=File.Create(filePath);
+                    using var fileStream = File.Create(filePath);
                     res.CopyTo(fileStream);
 
                     watch.Stop();
