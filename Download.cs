@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using YoutubeExplode.Videos;
 
 class Download : Collector
 {
@@ -43,6 +44,18 @@ class Download : Collector
         }
     }
 
+    /// <summary>
+    /// youtube現在好像有可能會卡這類影片的自動下載，可以考慮直接跳過(現有的相關檔案要備份R)
+    /// </summary>
+    // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
+    // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
+    // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
+    private static bool CheckSpecialVideo(VideoId videoId){
+        string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
+
+        return special.Contains(videoId.ToString());
+    }
+
     private async Task<int> Downlaod(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
     {
 
@@ -73,20 +86,16 @@ class Download : Collector
                 vtitle = RemoveSpecialChar(v?.Title ?? vtitle);
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
-                // youtube現在好像會卡這類影片的自動下載，先直接跳過(現有的相關檔案要備份R)
-                // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
-                // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
-                // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
-                string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
-                if (special.Contains(vId.ToString()))
-                {
-                    watch.Stop();
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
-                    list.Remove(list[0]);
-                    continue;
-                }
+                // 可能會炸的檢查，看以後有沒有辦法做到選擇性把下面的片段(Line 90-98)編譯進去
+                // if (checkSpecialVideo(vId))
+                // {
+                //     watch.Stop();
+                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
+                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
+                //     list.Remove(list[0]);
+                //     continue;
+                // }
 
 
                 if (File.Exists(filePath))
@@ -162,6 +171,7 @@ class Download : Collector
     }
 
     //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
+    // TODO: To avoid probability of 403,split playlist every 50 items as a group
     public override async Task Invoke()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
