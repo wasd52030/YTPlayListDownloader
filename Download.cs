@@ -87,15 +87,15 @@ class Download : Collector
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
                 // 可能會炸的檢查，看以後有沒有辦法做到選擇性把下面的片段(Line 90-98)編譯進去
-                // if (checkSpecialVideo(vId))
-                // {
-                //     watch.Stop();
-                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
-                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
-                //     Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
-                //     list.Remove(list[0]);
-                //     continue;
-                // }
+                if (CheckSpecialVideo(vId))
+                {
+                    watch.Stop();
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
+                    list.Remove(list[0]);
+                    continue;
+                }
 
 
                 if (File.Exists(filePath))
@@ -171,7 +171,6 @@ class Download : Collector
     }
 
     //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
-    // TODO: To avoid probability of 403,split playlist every 50 items as a group
     public override async Task Invoke()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
