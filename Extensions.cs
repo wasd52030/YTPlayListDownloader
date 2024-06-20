@@ -29,6 +29,12 @@ public static class Extensions
         return res;
     }
 
+    /// <summary>
+    /// Some videos have audio in only one of the two channels. Duplicating the audio from the active channel to the inactive one ensures that both channels now carry the same signal.
+    /// </summary>
+    /// <param name="streamInfo"></param>
+    /// <param name="maintrack"></param>
+    /// <returns></returns>
     public static async Task<Stream> GetReStereoMp3Stream(this IStreamInfo streamInfo, int maintrack)
     {
         var res = new MemoryStream();
