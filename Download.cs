@@ -13,7 +13,7 @@ class Download : Collector
 {
     public Download(string url) : base(url) { }
 
-    private static void AnnotateMp3Tag(string filePath, string vTitle, string? comment)
+    private void AnnotateMp3Tag(string filePath, string vTitle, string? comment)
     {
         string pattern = @"\[(.*?)\]";
         var matches = Regex.Matches(vTitle, pattern);
@@ -50,8 +50,16 @@ class Download : Collector
     // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
     // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
     // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
-    private static bool CheckSpecialVideo(VideoId videoId){
+    private bool CheckSpecialVideo(VideoId videoId)
+    {
         string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
+
+        return special.Contains(videoId.ToString());
+    }
+
+    private bool IsNeedReStereo(VideoId videoId)
+    {
+        string[] special = new string[] { "QJq6GAZYH18" };
 
         return special.Contains(videoId.ToString());
     }
@@ -74,6 +82,7 @@ class Download : Collector
         while (list.Count > 0)
         {
             watch.Restart();
+            Stream res;
 
             var vinfo = await yt.Videos.GetAsync(list[0].Url);
             var vtitle = vinfo.Title;
@@ -127,13 +136,27 @@ class Download : Collector
                     var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
                     var videoInfo = videotManifest.GetAudioOnlyStreams()
                                                   .GetWithHighestBitrate();
-                    var res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
+
+                    if (IsNeedReStereo(vId))
+                    {
+                        var ReStereoStopwatch = new Stopwatch();
+                        ReStereoStopwatch.Start();
+
+                        res = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(vtitle, v?.comment);
+                        Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ReStereo ☑ {ReStereoStopwatch.Elapsed}");
+
+                        ReStereoStopwatch.Stop();
+                    }
+                    else
+                    {
+                        res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
+                    }
 
                     using var fileStream = File.Create(filePath);
                     res.CopyTo(fileStream);
 
                     watch.Stop();
-                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
+                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} Download ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
                     list.Remove(list[0]);
                     await Task.Delay(250);
@@ -189,7 +212,7 @@ class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
 
-        var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
+        var explodeCount = await Downlaod(playListInfo.videos.Take(1).ToList(), playListInfo.videos.Count);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
         watch.Stop();
