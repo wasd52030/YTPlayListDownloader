@@ -211,8 +211,7 @@ class Download : Collector
         }
         Directory.SetCurrentDirectory($"./{name}");
 
-
-        var explodeCount = await Downlaod(playListInfo.videos.Take(1).ToList(), playListInfo.videos.Count);
+        var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
         watch.Stop();
