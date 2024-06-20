@@ -2,6 +2,7 @@ using YoutubeExplode.Videos.Streams;
 using System.Text.RegularExpressions;
 using FFMpegCore;
 using FFMpegCore.Pipes;
+using FFMpegCore.Arguments;
 
 public static class Extensions
 {
@@ -20,8 +21,30 @@ public static class Extensions
         var res = new MemoryStream();
 
         await FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
-                             .OutputToPipe(new StreamPipeSink(res), 
+                             .OutputToPipe(new StreamPipeSink(res),
                                             options => options.ForceFormat("mp3"))
+                             .ProcessAsynchronously();
+        res.Position = 0;
+
+        return res;
+    }
+
+    public static async Task<Stream> GetReStereoMp3Stream(this IStreamInfo streamInfo, int maintrack)
+    {
+        var res = new MemoryStream();
+
+        await FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
+                             .OutputToPipe(new StreamPipeSink(res),
+                                            options =>
+                                            {
+                                                options.ForceFormat("mp3");
+
+                                                // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
+                                                options.WithAudioFilters(filter =>
+                                                {
+                                                    filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
+                                                });
+                                            })
                              .ProcessAsynchronously();
         res.Position = 0;
 
