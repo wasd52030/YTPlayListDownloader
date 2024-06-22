@@ -112,7 +112,7 @@ class Download : Collector
                 {
                     watch.Stop();
 
-                    AnnotateMp3Tag(filePath, vtitle, v?.comment);
+                    // AnnotateMp3Tag(filePath, vtitle, v?.comment);
                     list.Remove(list[0]);
                     var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
@@ -244,7 +244,7 @@ class Download : Collector
                 {
                     watch.Stop();
 
-                    AnnotateMp3Tag(filePath, vtitle, v?.comment);
+                    // AnnotateMp3Tag(filePath, vtitle, v?.comment);
                     videos.Dequeue();
                     var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
