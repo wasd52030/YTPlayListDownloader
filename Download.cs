@@ -51,7 +51,7 @@ class Download : Collector
     // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
     // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
     // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
-    private bool CheckSpecialVideo(VideoId videoId)
+    private bool IsSpecialVideo(VideoId videoId)
     {
         string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
 
@@ -97,7 +97,7 @@ class Download : Collector
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
                 // 可能會炸的檢查，看以後有沒有辦法做到選擇性把下面的片段(Line 90-98)編譯進去
-                if (CheckSpecialVideo(vId))
+                if (IsSpecialVideo(vId))
                 {
                     watch.Stop();
                     Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
@@ -229,7 +229,7 @@ class Download : Collector
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
                 // 可能會炸的檢查，看以後有沒有辦法做到選擇性把下面的片段(Line 90-98)編譯進去
-                if (CheckSpecialVideo(vId))
+                if (IsSpecialVideo(vId))
                 {
                     watch.Stop();
                     Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
@@ -259,7 +259,8 @@ class Download : Collector
                     var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
                     var videoInfo = videotManifest.GetAudioOnlyStreams()
                                                   .GetWithHighestBitrate();
-
+                    
+                    
                     if (IsNeedReStereo(vId))
                     {
                         var ReStereoStopwatch = new Stopwatch();
@@ -328,6 +329,7 @@ class Download : Collector
         Stopwatch watch = new Stopwatch();
         watch.Start();
 
+        //TODO: 研究如何繞過自殺影片限制，我只是想聽歌而已啊
         var playListInfo = await GetPlayListInfo(url);
         var videoQueue = new Queue<PlaylistVideo>(playListInfo.videos);
 
