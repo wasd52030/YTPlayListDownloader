@@ -20,10 +20,10 @@ public static class Extensions
     {
         var res = new MemoryStream();
 
-        await FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
+        var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
                              .OutputToPipe(new StreamPipeSink(res),
-                                            options => options.ForceFormat("mp3"))
-                             .ProcessAsynchronously();
+                                            options => options.ForceFormat("mp3"));
+        await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
         return res;
@@ -39,19 +39,19 @@ public static class Extensions
     {
         var res = new MemoryStream();
 
-        await FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
-                             .OutputToPipe(new StreamPipeSink(res),
-                                            options =>
-                                            {
-                                                options.ForceFormat("mp3");
+        var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
+                                    .OutputToPipe(new StreamPipeSink(res),
+                                                   options =>
+                                                   {
+                                                       options.ForceFormat("mp3");
 
-                                                // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
-                                                options.WithAudioFilters(filter =>
-                                                {
-                                                    filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
-                                                });
-                                            })
-                             .ProcessAsynchronously();
+                                                       // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
+                                                       options.WithAudioFilters(filter =>
+                                                       {
+                                                           filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
+                                                       });
+                                                   });
+        await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
         return res;
