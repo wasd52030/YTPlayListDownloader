@@ -65,7 +65,7 @@ class Download : Collector
         return special.Contains(videoId.ToString());
     }
 
-    private async Task<int> Downlaod(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
+    private async Task<int> DownlaodList(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
     {
 
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
@@ -169,7 +169,7 @@ class Download : Collector
                 Console.WriteLine($"\n{e}");
                 Console.WriteLine("Boom！");
                 Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
-                return await Downlaod(list, playListLength, count - 1, explodeCount + 1);
+                return await DownlaodList(list, playListLength, count - 1, explodeCount + 1);
             }
         }
 
@@ -194,7 +194,7 @@ class Download : Collector
         return explodeCount;
     }
 
-    private async Task<int> QueueDownlaod(Queue<PlaylistVideo> videos)
+    private async Task<int> DownlaodList(Queue<PlaylistVideo> videos)
     {
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
         var jsonContent = JsonSerializer.Deserialize<Videos>(
@@ -342,7 +342,7 @@ class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
         // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
-        var explodeCount = await QueueDownlaod(videoQueue);
+        var explodeCount = await DownlaodList(videoQueue);
         Console.WriteLine($"\n共炸了{explodeCount}次");
 
         watch.Stop();
