@@ -65,6 +65,55 @@ class Download : Collector
         return special.Contains(videoId.ToString());
     }
 
+    private async Task<bool> DownloadVideo(PlaylistVideo Video, Videos? CustomVideoTitles)
+    {
+
+        var vinfo = await yt.Videos.GetAsync(Video.Url);
+        var vtitle = vinfo.Title;
+        var vId = vinfo.Id;
+        Stream Mp3Stream = new MemoryStream();
+
+        var CustomVideoTitle = CustomVideoTitles?.items.FirstOrDefault(v => v.Id == vinfo.Id);
+        vtitle = RemoveSpecialChar(CustomVideoTitle?.Title ?? vtitle);
+        var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
+
+        // 可能會炸的檢查
+        if (IsSpecialVideo(vId))
+        {
+            return false;
+        }
+
+        try
+        {
+            var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
+            var videoInfo = videotManifest.GetAudioOnlyStreams()
+                                          .GetWithHighestBitrate();
+
+
+            if (IsNeedReStereo(vId))
+            {
+                if (vId == "QJq6GAZYH18")
+                {
+                    Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(vtitle, CustomVideoTitle?.comment);
+                    Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
+                }
+            }
+            else
+            {
+                Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, CustomVideoTitle?.comment);
+            }
+
+            using var fileStream = File.Create(filePath);
+            Mp3Stream.CopyTo(fileStream);
+
+            return true;
+        }
+        catch (System.Exception)
+        {
+            throw;
+        }
+    }
+
     private async Task<int> DownlaodList(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
     {
 
@@ -194,22 +243,27 @@ class Download : Collector
         return explodeCount;
     }
 
-    private async Task<int> DownlaodList(Queue<PlaylistVideo> videos)
+    private async Task DownlaodList(Queue<PlaylistVideo> videos)
     {
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
         var jsonContent = JsonSerializer.Deserialize<Videos>(
             jsonFile,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         );
+
         Stopwatch watch = new Stopwatch();
+
         var count = 0;
         var playListLength = videos.Count;
-        var explodeCount = 0;
         Stream Mp3Stream = new MemoryStream();
+
+        // https://stackoverflow.com/questions/10806951/how-to-limit-the-amount-of-concurrent-async-i-o-operations
+        var throttler = new SemaphoreSlim(initialCount: 10);
+        List<Task> DownloadTasks = new List<Task>();
 
         if (videos.Count == 0)
         {
-            return 0;
+            return;
         }
 
         while (videos.Count > 0)
@@ -228,17 +282,6 @@ class Download : Collector
                 vtitle = RemoveSpecialChar(v?.Title ?? vtitle);
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
-                // 可能會炸的檢查，看以後有沒有辦法做到選擇性把下面的片段(Line 90-98)編譯進去
-                if (IsSpecialVideo(vId))
-                {
-                    watch.Stop();
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}");
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Due to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
-                    Console.WriteLine($"[{count:D4}/{playListLength:D4}] Please make backups in advance, or seek alternative services for downloading.");
-                    videos.Dequeue();
-                    continue;
-                }
-
 
                 if (File.Exists(filePath))
                 {
@@ -246,7 +289,7 @@ class Download : Collector
 
                     // AnnotateMp3Tag(filePath, vtitle, v?.comment);
                     videos.Dequeue();
-                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ☑ {watch.Elapsed}";
+                    var message = $"{filePath.Split('/').Last()} ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
                 }
                 else
@@ -255,49 +298,58 @@ class Download : Collector
                     {
                         jsonContent?.items.Add(new Video(vId, vtitle, null));
                     }
+                    await throttler.WaitAsync();
 
-                    var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
-                    var videoInfo = videotManifest.GetAudioOnlyStreams()
-                                                  .GetWithHighestBitrate();
-                    
-                    
-                    if (IsNeedReStereo(vId))
+                    DownloadTasks.Add(Task.Run(async () =>
                     {
-                        var ReStereoStopwatch = new Stopwatch();
-                        if (vId == "QJq6GAZYH18")
+                        try
                         {
-                            ReStereoStopwatch.Start();
+                            Stopwatch watch = Stopwatch.StartNew();
+                            watch.Restart();
+                            var res = await DownloadVideo(video, jsonContent);
+                            watch.Stop();
 
-                            Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(vtitle, v?.comment);
-                            Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ReStereo ☑ {ReStereoStopwatch.Elapsed}");
-
-                            ReStereoStopwatch.Stop();
+                            if (res)
+                            {
+                                var message = $"{filePath.Split('/').Last()} Download ☑ {watch.Elapsed}";
+                                Console.WriteLine(message);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{filePath.Split('/').Last()} ☑ {watch.Elapsed}");
+                                Console.WriteLine($"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                                Console.WriteLine($"\tPlease make backups in advance, or seek alternative services for downloading.");
+                            }
                         }
-                    }
-                    else
-                    {
-                        Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
-                    }
-
-                    using var fileStream = File.Create(filePath);
-                    Mp3Stream.CopyTo(fileStream);
-
-                    watch.Stop();
-                    var message = $"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} Download ☑ {watch.Elapsed}";
-                    Console.WriteLine(message);
+                        finally
+                        {
+                            throttler.Release();
+                        }
+                    }));
                     videos.Dequeue();
                 }
 
             }
             catch (System.Exception e)
             {
-                explodeCount++;
                 Console.WriteLine($"\n{e}");
                 Console.WriteLine("Boom！");
-                Console.WriteLine($"explodeCount: {explodeCount}\n");
                 continue;
             }
         }
+
+        Task allTask = Task.WhenAll(DownloadTasks);
+        try
+        {
+            await allTask;
+        }
+        catch (System.Exception e)
+        {
+            Console.WriteLine($"\n{e}");
+            Console.WriteLine("Boom！");
+            throw;
+        }
+
 
         if (jsonContent != null)
         {
@@ -316,8 +368,6 @@ class Download : Collector
             Directory.SetCurrentDirectory($"../");
             await File.WriteAllTextAsync("./customTitle.json", finalJson);
         }
-
-        return explodeCount;
     }
 
 
@@ -342,8 +392,7 @@ class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
         // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
-        var explodeCount = await DownlaodList(videoQueue);
-        Console.WriteLine($"\n共炸了{explodeCount}次");
+        await DownlaodList(videoQueue);
 
         watch.Stop();
         Console.WriteLine($"執行時間: {watch.Elapsed}");
