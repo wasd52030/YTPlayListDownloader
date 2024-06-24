@@ -268,8 +268,6 @@ class Download : Collector
 
         while (videos.Count > 0)
         {
-            watch.Restart();
-
             var video = videos.Peek();
             var vinfo = await yt.Videos.GetAsync(video.Url);
             var vtitle = vinfo.Title;
@@ -285,9 +283,6 @@ class Download : Collector
 
                 if (File.Exists(filePath))
                 {
-                    watch.Stop();
-
-                    // AnnotateMp3Tag(filePath, vtitle, v?.comment);
                     videos.Dequeue();
                     var message = $"{filePath.Split('/').Last()} ☑ {watch.Elapsed}";
                     Console.WriteLine(message);
