@@ -3,9 +3,6 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using Plotly.NET.ImageExport;
 using Plotly.NET;
-using Plotly.NET.LayoutObjects;
-using Plotly.NET.CSharp;
-using Plotly.NET.TraceObjects;
 
 class DataAnalysis
 {

@@ -1,6 +1,4 @@
-using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
-using YoutubeExplode.Converter;
 using YoutubeExplode.Playlists;
 using System.Text.Json;
 using System.Text.Encodings.Web;
@@ -8,7 +6,6 @@ using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using YoutubeExplode.Videos;
-using System.Collections;
 
 class Download : Collector
 {

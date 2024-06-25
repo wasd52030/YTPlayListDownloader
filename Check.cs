@@ -1,4 +1,3 @@
-using YoutubeExplode;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 

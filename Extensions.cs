@@ -2,7 +2,6 @@ using YoutubeExplode.Videos.Streams;
 using System.Text.RegularExpressions;
 using FFMpegCore;
 using FFMpegCore.Pipes;
-using FFMpegCore.Arguments;
 
 public static class Extensions
 {
