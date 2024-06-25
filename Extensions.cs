@@ -57,19 +57,19 @@ public static class Extensions
         return res;
     }
 
-    public static Stream AnnotateMp3Tag(this Stream stream, string title, string? comment)
+    public static Stream AnnotateMp3Tag(this Stream stream, Video? playListVideoInfo, string queryId)
     {
         TagLib.Id3v2.Tag.DefaultVersion = 4;
         TagLib.Id3v2.Tag.ForceDefaultVersion = true;
 
         string pattern = @"\[(.*?)\]";
-        var matches = Regex.Matches(title, pattern);
+        var matches = Regex.Matches(playListVideoInfo.Title, pattern);
 
         var res = new MemoryStream();
 
         try
         {
-            using var mp3 = TagLib.File.Create(new StreamFileAbstraction($"{title}.mp3", stream));
+            using var mp3 = TagLib.File.Create(new StreamFileAbstraction($"{playListVideoInfo.Title}.mp3", stream));
 
             if (matches.Any())
             {
@@ -78,9 +78,16 @@ public static class Extensions
                 mp3.Tag.Performers = contributors.ToArray();
             }
 
-            if (comment != null)
+            if (playListVideoInfo.comment != null)
             {
-                mp3.Tag.Comment = comment;
+                mp3.Tag.Comment = playListVideoInfo.comment;
+            }
+
+            var p = playListVideoInfo.Playlists.FirstOrDefault(i => i.Id == queryId);
+            if (p != null)
+            {
+                mp3.Tag.Album = $"{p.Owner} - {p.Title}";
+                mp3.Tag.Track = (uint)p.Position;
             }
 
             mp3.Save();

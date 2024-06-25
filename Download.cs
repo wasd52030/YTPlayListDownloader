@@ -65,12 +65,13 @@ class Download : Collector
         return special.Contains(videoId.ToString());
     }
 
-    private async Task<bool> DownloadVideo(PlaylistVideo Video, Videos? CustomVideoTitles)
+    private async Task<bool> DownloadVideo(string queryPlayListId, PlaylistVideo Video, Videos? CustomVideoTitles)
     {
 
         var vinfo = await yt.Videos.GetAsync(Video.Url);
         var vtitle = vinfo.Title;
         var vId = vinfo.Id;
+        var PlaylistId = Video.PlaylistId;
         Stream Mp3Stream = new MemoryStream();
 
         var CustomVideoTitle = CustomVideoTitles?.items.FirstOrDefault(v => v.Id == vinfo.Id);
@@ -94,13 +95,13 @@ class Download : Collector
             {
                 if (vId == "QJq6GAZYH18")
                 {
-                    Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(vtitle, CustomVideoTitle?.comment);
+                    Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
             }
             else
             {
-                Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, CustomVideoTitle?.comment);
+                Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
             }
 
             using var fileStream = File.Create(filePath);
@@ -114,7 +115,7 @@ class Download : Collector
         }
     }
 
-    private async Task<int> DownlaodList(List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
+    private async Task<int> DownlaodList(string queryPlayListId, List<PlaylistVideo> list, int playListLength, int count = 0, int explodeCount = 0)
     {
 
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
@@ -137,11 +138,11 @@ class Download : Collector
             var vinfo = await yt.Videos.GetAsync(list[0].Url);
             var vtitle = vinfo.Title;
             var vId = vinfo.Id;
+            var v = jsonContent?.items.FirstOrDefault(v => v.Id == vinfo.Id);
 
             try
             {
                 count++;
-                var v = jsonContent?.items.FirstOrDefault(v => v.Id == vinfo.Id);
                 vtitle = RemoveSpecialChar(v?.Title ?? vtitle);
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
@@ -192,14 +193,14 @@ class Download : Collector
                         var ReStereoStopwatch = new Stopwatch();
                         ReStereoStopwatch.Start();
 
-                        res = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(vtitle, v?.comment);
+                        res = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(v, queryPlayListId);
                         Console.WriteLine($"[{count:D4}/{playListLength:D4}] {filePath.Split('/').Last()} ReStereo ☑ {ReStereoStopwatch.Elapsed}");
 
                         ReStereoStopwatch.Stop();
                     }
                     else
                     {
-                        res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(vtitle, v?.comment);
+                        res = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(v, queryPlayListId);
                     }
 
                     using var fileStream = File.Create(filePath);
@@ -218,16 +219,13 @@ class Download : Collector
                 Console.WriteLine($"\n{e}");
                 Console.WriteLine("Boom！");
                 Console.WriteLine($"explodeCount: {explodeCount + 1}\n");
-                return await DownlaodList(list, playListLength, count - 1, explodeCount + 1);
+                return await DownlaodList(queryPlayListId, list, playListLength, count - 1, explodeCount + 1);
             }
         }
 
         if (jsonContent != null)
         {
-            jsonContent.items.Sort((Video a, Video b) =>
-            {
-                return a.Title.CompareTo(b.Title);
-            });
+            jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
 
             var finalJson = JsonSerializer.Serialize<Videos>(
                 jsonContent,
@@ -243,7 +241,7 @@ class Download : Collector
         return explodeCount;
     }
 
-    private async Task DownlaodList(Queue<PlaylistVideo> videos)
+    private async Task DownlaodList(string queryPlayListId, Queue<PlaylistVideo> videos)
     {
         string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
         var jsonContent = JsonSerializer.Deserialize<Videos>(
@@ -301,7 +299,7 @@ class Download : Collector
                         {
                             Stopwatch watch = Stopwatch.StartNew();
                             watch.Restart();
-                            var res = await DownloadVideo(video, jsonContent);
+                            var res = await DownloadVideo(queryPlayListId, video, jsonContent);
                             watch.Stop();
 
                             if (res)
@@ -348,10 +346,7 @@ class Download : Collector
 
         if (jsonContent != null)
         {
-            jsonContent.items.Sort((Video a, Video b) =>
-            {
-                return a.Title.CompareTo(b.Title);
-            });
+            jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
 
             var finalJson = JsonSerializer.Serialize<Videos>(
                 jsonContent,
@@ -376,6 +371,7 @@ class Download : Collector
 
         //TODO: 研究如何繞過自殺影片限制，我只是想聽歌而已啊
         var playListInfo = await GetPlayListInfo(url);
+
         var videoQueue = new Queue<PlaylistVideo>(playListInfo.videos);
 
         string name = $"YT-{playListInfo.title}";
@@ -387,7 +383,7 @@ class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
         // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
-        await DownlaodList(videoQueue);
+        await DownlaodList(playListInfo.id, videoQueue);
 
         watch.Stop();
         Console.WriteLine($"執行時間: {watch.Elapsed}");
