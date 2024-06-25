@@ -23,13 +23,13 @@ abstract class Collector
         return input;
     }
 
-    public static async Task<(string title, string owner, List<YoutubeExplode.Playlists.PlaylistVideo> videos)> GetPlayListInfo(string url)
+    public static async Task<(string id, string title, string owner, List<YoutubeExplode.Playlists.PlaylistVideo> videos)> GetPlayListInfo(string url)
     {
         var yt = new YoutubeClient();
         var playlist = await yt.Playlists.GetAsync(url);
         var VideoList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
 
 
-        return (playlist.Title, playlist.Author?.ChannelTitle!, VideoList);
+        return (playlist.Id, playlist.Title, playlist.Author?.ChannelTitle!, VideoList);
     }
 }
