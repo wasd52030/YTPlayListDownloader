@@ -93,17 +93,19 @@ class Download : Collector
                 if (vId == "QJq6GAZYH18")
                 {
                     Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                    await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
             }
             else
             {
                 Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                await Task.Delay(1500);
             }
 
             using var fileStream = File.Create(filePath);
-            Mp3Stream.CopyTo(fileStream);
-
+            await Mp3Stream.CopyToAsync(fileStream);
+            await Task.Delay(1500);
             return true;
         }
         catch (System.Exception)
@@ -253,7 +255,7 @@ class Download : Collector
         Stream Mp3Stream = new MemoryStream();
 
         // https://stackoverflow.com/questions/10806951/how-to-limit-the-amount-of-concurrent-async-i-o-operations
-        var throttler = new SemaphoreSlim(initialCount: 10);
+        var throttler = new SemaphoreSlim(initialCount: 5);
         List<Task> DownloadTasks = new List<Task>();
 
         if (videos.Count == 0)
@@ -310,6 +312,12 @@ class Download : Collector
                                 Console.WriteLine($"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
                                 Console.WriteLine($"\tPlease make backups in advance, or seek alternative services for downloading.");
                             }
+                        }
+                        catch (System.Exception e)
+                        {
+                            Console.WriteLine($"\n{e}");
+                            Console.WriteLine("Boom！");
+                            throw;
                         }
                         finally
                         {
