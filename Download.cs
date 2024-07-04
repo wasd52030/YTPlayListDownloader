@@ -45,12 +45,13 @@ class Download : Collector
     /// <summary>
     /// youtube現在好像有可能會卡這類影片的自動下載，可以考慮直接跳過(現有的相關檔案要備份R)
     /// </summary>
+    // {"id": "ry3Tupx4BL4","title": "[ヨルシカ] パレード"}
     // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
     // {"id": "4QXCPuwBz2E","title": "[ツユ] あの世行きのバスに乗ってさらば"}
     // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
     private bool IsSpecialVideo(VideoId videoId)
     {
-        string[] special = new string[] { "4QXCPuwBz2E", "87moOXPTtSk", "0_pfGRDugxg" };
+        string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
 
         return special.Contains(videoId.ToString());
     }
