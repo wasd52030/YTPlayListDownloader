@@ -25,7 +25,7 @@ async Task Main()
 
 
     // check command
-    var checkCommand = new Command(name: "check", description: "查詢custom.json裡面的內容與指定的波放清單內容之差異")
+    var checkCommand = new Command(name: "check", description: "查詢custom.json裡面的內容與指定的播放清單內容之差異")
     {
         playlistOption
     };
