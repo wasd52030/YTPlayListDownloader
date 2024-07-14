@@ -20,19 +20,39 @@ class AutoTitle : Collector
 
     private async Task<HashSet<Video>> UpdatePlayListInfo(IEnumerable<Video> videos)
     {
-
         var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
         var PlaylistInfo = await yt.Playlists.GetAsync(url);
+        string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
+
         return videos.Select(v =>
         {
             var InPlaylist = playList.FirstOrDefault((playList) => playList.Id == v.Id);
             if (InPlaylist != null)
             {
-                var id = PlaylistInfo.Id;
-                var owner = PlaylistInfo.Author?.ChannelTitle!.Replace("by", "").Trim();
-                var title = PlaylistInfo.Title;
-                var track = playList.IndexOf(InPlaylist) + 1;
-                v.Playlists.Add(new PlaylistInfo(id, owner, title, track));
+                if (special.Contains(v.Id))
+                {
+                    Console.WriteLine($"{playList.IndexOf(InPlaylist) + 1} - {v.Title}");
+                }
+
+                var check = v.Playlists.FirstOrDefault((playList) => playList.Id == PlaylistInfo.Id);
+                if (check != null)
+                {
+                    v.Playlists = v.Playlists.Where(playList => playList.Id == PlaylistInfo.Id)
+                                             .Select(ytAlbum =>
+                                             {
+                                                 ytAlbum.Position = playList.IndexOf(InPlaylist) + 1;
+                                                 return ytAlbum;
+                                             })
+                                            .ToHashSet();
+                }
+                else
+                {
+                    var id = PlaylistInfo.Id;
+                    var owner = PlaylistInfo.Author?.ChannelTitle!.Replace("by", "").Trim();
+                    var title = PlaylistInfo.Title;
+                    var track = playList.IndexOf(InPlaylist) + 1;
+                    v.Playlists.Add(new PlaylistInfo(id, owner, title, track));
+                }
             }
             return v;
         })
