@@ -43,7 +43,12 @@ class Download : Collector
     }
 
     /// <summary>
+    /// <para>
     /// youtube現在好像有可能會卡這類影片的自動下載，可以考慮直接跳過(現有的相關檔案要備份R)
+    /// </para>
+    /// <para>
+    /// 作者似乎也能設定擋下載 (YoutubeExplode.Exceptions.VideoUnplayableException: Video 'videoId' is unplayable. Reason: 'Playback on other websites has been disabled by the video owner')
+    /// </para>
     /// </summary>
     // {"id": "ry3Tupx4BL4","title": "[ヨルシカ] パレード"}
     // {"id": "87moOXPTtSk","title": "[-inai-][可不] 死のうとしたのにな"}
@@ -51,7 +56,7 @@ class Download : Collector
     // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
     private bool IsSpecialVideo(VideoId videoId)
     {
-        string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
+        string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg", "Ej0DA0BgbRU" };
 
         return special.Contains(videoId.ToString());
     }
