@@ -56,9 +56,10 @@ class Download : Collector
     // {"id": "0_pfGRDugxg","title": "[Rap Battle!] Light Yagami vs Monika"}
     private bool IsSpecialVideo(VideoId videoId)
     {
-        string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg", "Ej0DA0BgbRU" };
+        string[] suicide  = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
+        string[] unplayable = new string[] { "Ej0DA0BgbRU" };
 
-        return special.Contains(videoId.ToString());
+        return unplayable.Contains(videoId.ToString());
     }
 
     private bool IsNeedReStereo(VideoId videoId)
