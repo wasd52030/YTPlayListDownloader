@@ -99,13 +99,6 @@ class DataAnalysis
             Labels: plotSeq.Select(item => item.Key).ToList()
         );
 
-
-        var MicrosoftJhengHei = StyleParam.FontFamily.Custom.NewCustom("./MicrosoftJhengHei.ttf");
-        var layoutTemplate = Layout.init<IConvertible>(
-            Title: Title.init("statistics of contributors")
-         // Font: Font.init(MicrosoftJhengHei)
-         );
-
         pie.WithTitle("statistics of contributors")
            .SavePNG("contributorStat", Width: 700, Height: 450);
     }
