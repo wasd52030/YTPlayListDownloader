@@ -94,12 +94,13 @@ class DataAnalysis
                             )
                          .ToDictionary(item => item.Item1, item => (double)item.Item2);
 
-        var pie = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
+        
+        var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
             values: plotSeq.Select(item => item.Value).ToList(),
             Labels: plotSeq.Select(item => item.Key).ToList()
         );
 
-        pie.WithTitle("statistics of contributors")
+        doughnut.WithTitle("statistics of contributors")
            .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
