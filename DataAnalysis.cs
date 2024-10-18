@@ -58,7 +58,7 @@ class DataAnalysis
         );
     }
 
-    public static void MakePieChart(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
+    static void MakePieChart(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
     {
         var plotSeq = baseSeq.Where(item => item.Key != "unknown")
                          .Select(item => new { key = item.Key, count = item.Count() })
