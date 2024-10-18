@@ -37,6 +37,7 @@ class DataAnalysis
         await MakeJSON(baseSeq);
         MakePieChart(baseSeq);
     }
+
     static async Task MakeJSON(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
     {
         var stat = baseSeq.ToDictionary(o => o.Key, o => (double)o.Count());
@@ -65,41 +66,47 @@ class DataAnalysis
                          .Select(item =>
                          {
                              var seq = item.Select(item => item);
-                             var s = string.Join(
-                                ", ",
-                                seq.Select(item => item.key)
-                                   .OrderBy(item => item.Length)
-                                   .ThenBy(item => item)
-                                   .Take(3)
-                             );
 
-                             if (seq.Count() > 3)
+                             var detail = string.Join(
+                                             ", ",
+                                            seq.Select(item => item.key)
+                                               .OrderBy(item => item.Length)
+                                               .ThenBy(item => item)
+                                               .Take(3)
+                                        );
+
+                             // https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching
+                             // https://dog0416.blogspot.com/2020/02/c-80-pattern-matching-enhancements.html
+                             string s = seq.Count() switch
                              {
-                                 s = $"{s}, ... 等{seq.Count()}位";
-                             }
+                                 > 3 => $"[{item.Key}*{seq.Count()} = {item.Key * seq.Count()}] {detail}, ... 等{seq.Count()}位",
+                                 > 1 => $"[{item.Key}*{seq.Count()} = {item.Key * seq.Count()}] {detail}",
+                                 1 => $"[{item.Key}] {detail}",
+                                 _ => "" // seq.Count() 在此幾乎保證大於等於1，因此其餘狀況回傳空字串
+                             };
 
                              var m = item.Count() * item.Key;
                              return (s, m);
                          })
                          .Concat(
                             baseSeq.Where(item => item.Key == "unknown")
-                                   .Select(item => (item.Key, item.Count()))
+                                   .Select(item => ($"[{item.Count()}] {item.Key}", item.Count()))
                             )
                          .ToDictionary(item => item.Item1, item => (double)item.Item2);
 
-        var pie = Plotly.NET.CSharp.Chart.Pie<double, string, string>(
+        var pie = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
             values: plotSeq.Select(item => item.Value).ToList(),
             Labels: plotSeq.Select(item => item.Key).ToList()
         );
-        
+
 
         var MicrosoftJhengHei = StyleParam.FontFamily.Custom.NewCustom("./MicrosoftJhengHei.ttf");
         var layoutTemplate = Layout.init<IConvertible>(
-            Title: Title.init("詳細資訊請參考 contributorStat.json！")
-            // Font: Font.init(MicrosoftJhengHei)
+            Title: Title.init("statistics of contributors")
+         // Font: Font.init(MicrosoftJhengHei)
          );
-        
-        pie.WithTitle("詳細資訊請參考 contributorStat.json！")
+
+        pie.WithTitle("statistics of contributors")
            .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
