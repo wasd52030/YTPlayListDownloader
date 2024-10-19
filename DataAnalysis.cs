@@ -93,36 +93,33 @@ class DataAnalysis
                             baseSeq.Where(item => item.Key == "unknown")
                                    .Select(item => ($"[{item.Count()}] {item.Key}", item.Count()))
                             )
-                         .ToDictionary(item => item.Item1, item => (double)item.Item2);
+                         .ToList();
 
         var random = new Random();
         var myplot = new ScottPlot.Plot();
-        Fonts.AddFontFile(
-            name: "NotoSerifTC",
-            path: Path.Combine("NotoSerifTC-Black.ttf")
-        );
 
-        double total = plotSeq.Select(x => x.Value).Sum();
+        double total = plotSeq.Select(x => x.Item2).Sum();
         var slices = plotSeq.Select(item =>
                             {
                                 var slice = new PieSlice(
-                                    item.Value,
+                                    item.Item2,
                                     new ScottPlot.Color(string.Format("#{0:X6}", Guid.NewGuid().ToString().Substring(0, 6))),
-                                    $"{item.Value / total * 100:0.0}%"
+                                    $"{item.Item2 / total * 100:0.0}%"
                                 );
 
                                 slice.LabelFontSize = 20;
                                 slice.LabelBold = true;
                                 slice.LabelFontColor = new ScottPlot.Color("#ffffff");
 
-                                slice.LegendText = item.Key;
+                                slice.LegendText = item.Item1;
 
                                 return slice;
                             })
+                            // .OrderBy(item => item.Value)
                             .ToList();
         var pie = myplot.Add.Pie(slices);
 
-        pie.DonutFraction = .5;
+        pie.DonutFraction = .6;
         pie.SliceLabelDistance = 0.8;
 
 
@@ -135,7 +132,7 @@ class DataAnalysis
         myplot.SavePng("contributorStat.png", 1200, 800);
 
 
-        
+
 
         // Plotly.NET
         // var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
