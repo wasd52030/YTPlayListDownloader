@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using Plotly.NET.ImageExport;
 using Plotly.NET;
+using ScottPlot;
 
 class DataAnalysis
 {
@@ -35,7 +36,7 @@ class DataAnalysis
 
 
         await MakeJSON(baseSeq);
-        MakePieChart(baseSeq);
+        MakeChart(baseSeq);
     }
 
     static async Task MakeJSON(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
@@ -58,7 +59,7 @@ class DataAnalysis
         );
     }
 
-    static void MakePieChart(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
+    static void MakeChart(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
     {
         var plotSeq = baseSeq.Where(item => item.Key != "unknown")
                          .Select(item => new { key = item.Key, count = item.Count() })
@@ -94,13 +95,55 @@ class DataAnalysis
                             )
                          .ToDictionary(item => item.Item1, item => (double)item.Item2);
 
-        
-        var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
-            values: plotSeq.Select(item => item.Value).ToList(),
-            Labels: plotSeq.Select(item => item.Key).ToList()
+        var random = new Random();
+        var myplot = new ScottPlot.Plot();
+        Fonts.AddFontFile(
+            name: "NotoSerifTC",
+            path: Path.Combine("NotoSerifTC-Black.ttf")
         );
 
-        doughnut.WithTitle("statistics of contributors")
-           .SavePNG("contributorStat", Width: 700, Height: 450);
+        double total = plotSeq.Select(x => x.Value).Sum();
+        var slices = plotSeq.Select(item =>
+                            {
+                                var slice = new PieSlice(
+                                    item.Value,
+                                    new ScottPlot.Color(string.Format("#{0:X6}", Guid.NewGuid().ToString().Substring(0, 6))),
+                                    $"{item.Value / total * 100:0.0}%"
+                                );
+
+                                slice.LabelFontSize = 20;
+                                slice.LabelBold = true;
+                                slice.LabelFontColor = new ScottPlot.Color("#ffffff");
+
+                                slice.LegendText = item.Key;
+
+                                return slice;
+                            })
+                            .ToList();
+        var pie = myplot.Add.Pie(slices);
+
+        pie.DonutFraction = .5;
+        pie.SliceLabelDistance = 0.8;
+
+
+        myplot.Axes.Frameless();
+        myplot.HideAxesAndGrid();
+        // 目前沒辦法假名+漢字
+        myplot.Font.Automatic();
+        myplot.ShowLegend(Edge.Right);
+
+        myplot.SavePng("contributorStat.png", 1200, 800);
+
+
+        
+
+        // Plotly.NET
+        // var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
+        //     values: plotSeq.Select(item => item.Value).ToList(),
+        //     Labels: plotSeq.Select(item => item.Key).ToList()
+        // );
+
+        // doughnut.WithTitle("statistics of contributors")
+        //    .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
