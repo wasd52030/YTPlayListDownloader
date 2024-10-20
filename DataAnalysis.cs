@@ -115,7 +115,6 @@ class DataAnalysis
 
                                 return slice;
                             })
-                            // .OrderBy(item => item.Value)
                             .ToList();
         var pie = myplot.Add.Pie(slices);
 
