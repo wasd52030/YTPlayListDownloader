@@ -381,7 +381,6 @@ class Download : Collector
         Stopwatch watch = new Stopwatch();
         watch.Start();
 
-        //TODO: 研究如何繞過自殺影片限制，我只是想聽歌而已啊
         var playListInfo = await GetPlayListInfo(url);
 
         var videoQueue = new Queue<PlaylistVideo>(playListInfo.videos);
