@@ -23,12 +23,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Install cjk font
         run: sudo apt-get install fonts-noto-cjk
-      - name: Install Segoe-UI Font
+      - name: Install Segoe-UI font
         run: |
-          git clone https://github.com/mrbvrz/segoe-ui-linux
-          cd segoe-ui-linux
-          chmod +x install.sh
-          ./install.sh
+          DEST_DIR="${HOME}/.fonts/segoeui"
+          mkdir -p $DEST_DIR
+          VARIANTS='segoeui segoeuib segoeuii segoeuiz segoeuil seguili segoeuisl seguisli seguisb seguisbi seguibl seguibli seguiemj seguisym seguihis'
+          for VARIANT in $VARIANTS; do
+            # Do not overwrite existing files
+            wget --no-clobber https://github.com/mrbvrz/segoe-ui/raw/master/font/${VARIANT}.ttf?raw=true -O "${DEST_DIR}/${VARIANT}.ttf"
+          done
+          fc-cache -fv
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
