@@ -95,51 +95,55 @@ class DataAnalysis
                             )
                          .ToList();
 
-        var random = new Random();
-        var myplot = new ScottPlot.Plot();
+        #region Plotly.NET
+            // Plotly.NET
+            var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
+                values: plotSeq.Select(item => (double)item.Item2).ToList(),
+                Labels: plotSeq.Select(item => item.Item1).ToList()
+            );
 
-        double total = plotSeq.Select(x => x.Item2).Sum();
-        var slices = plotSeq.Select(item =>
-                            {
-                                var slice = new PieSlice(
-                                    item.Item2,
-                                    new ScottPlot.Color(string.Format("#{0:X6}", Guid.NewGuid().ToString().Substring(0, 6))),
-                                    $"{item.Item2 / total * 100:0.0}%"
-                                );
+            // reference -> https://stackoverflow.com/questions/72504275/make-chart-fill-size-of-browser-window
+            doughnut.WithTitle("statistics of contributors")
+                    .WithConfig(Config.init(Responsive:true))
+                    .SavePNG("contributorStat", Width: 1200, Height: 800);
+        #endregion
+        
 
-                                slice.LabelFontSize = 20;
-                                slice.LabelBold = true;
-                                slice.LabelFontColor = new ScottPlot.Color("#ffffff");
+        #region ScottPlot
+            // ScottPlot
+            // var myplot = new ScottPlot.Plot();
 
-                                slice.LegendText = item.Item1;
+            // double total = plotSeq.Select(x => x.Item2).Sum();
+            // var slices = plotSeq.Select(item =>
+            //                     {
+            //                         var slice = new PieSlice(
+            //                             item.Item2,
+            //                             new ScottPlot.Color(string.Format("#{0:X6}", Guid.NewGuid().ToString().Substring(0, 6))),
+            //                             $"{item.Item2 / total * 100:0.0}%"
+            //                         );
 
-                                return slice;
-                            })
-                            .ToList();
-        // var pie = myplot.Add.Pie(slices);
+            //                         slice.LabelFontSize = 20;
+            //                         slice.LabelBold = true;
+            //                         slice.LabelFontColor = new ScottPlot.Color("#ffffff");
 
-        // pie.DonutFraction = .6;
-        // pie.SliceLabelDistance = 0.8;
+            //                         slice.LegendText = item.Item1;
 
+            //                         return slice;
+            //                     })
+            //                     .ToList();
+            // var pie = myplot.Add.Pie(slices);
 
-        // myplot.Axes.Frameless();
-        // myplot.HideAxesAndGrid();
-        // // 目前沒辦法假名+漢字
-        // myplot.Font.Automatic();
-        // myplot.ShowLegend(Edge.Right);
-
-        // myplot.SavePng("contributorStat.png", 1200, 800);
+            // pie.DonutFraction = .6;
+            // pie.SliceLabelDistance = 0.8;
 
 
+            // myplot.Axes.Frameless();
+            // myplot.HideAxesAndGrid();
+            // // 目前沒辦法假名+漢字
+            // myplot.Font.Automatic();
+            // myplot.ShowLegend(Edge.Right);
 
-
-        // Plotly.NET
-        var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
-            values: plotSeq.Select(item => (double)item.Item2).ToList(),
-            Labels: plotSeq.Select(item => item.Item1).ToList()
-        );
-
-        doughnut.WithTitle("statistics of contributors")
-           .SavePNG("contributorStat", Width: 700, Height: 450);
+            // myplot.SavePng("contributorStat.png", 1200, 800);
+        #endregion
     }
 }
