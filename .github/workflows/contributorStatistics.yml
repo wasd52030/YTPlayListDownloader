@@ -23,6 +23,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Install cjk font
         run: sudo apt-get install fonts-noto-cjk
+      - name: Install Segoe-UI Font
+        run: |
+          git clone https://github.com/mrbvrz/segoe-ui-linux
+          cd segoe-ui-linux
+          chmod +x install.sh
+          ./install.sh
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
