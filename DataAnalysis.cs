@@ -116,30 +116,30 @@ class DataAnalysis
                                 return slice;
                             })
                             .ToList();
-        var pie = myplot.Add.Pie(slices);
+        // var pie = myplot.Add.Pie(slices);
 
-        pie.DonutFraction = .6;
-        pie.SliceLabelDistance = 0.8;
+        // pie.DonutFraction = .6;
+        // pie.SliceLabelDistance = 0.8;
 
 
-        myplot.Axes.Frameless();
-        myplot.HideAxesAndGrid();
-        // 目前沒辦法假名+漢字
-        myplot.Font.Automatic();
-        myplot.ShowLegend(Edge.Right);
+        // myplot.Axes.Frameless();
+        // myplot.HideAxesAndGrid();
+        // // 目前沒辦法假名+漢字
+        // myplot.Font.Automatic();
+        // myplot.ShowLegend(Edge.Right);
 
-        myplot.SavePng("contributorStat.png", 1200, 800);
+        // myplot.SavePng("contributorStat.png", 1200, 800);
 
 
 
 
         // Plotly.NET
-        // var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
-        //     values: plotSeq.Select(item => item.Value).ToList(),
-        //     Labels: plotSeq.Select(item => item.Key).ToList()
-        // );
+        var doughnut = Plotly.NET.CSharp.Chart.Doughnut<double, string, string>(
+            values: plotSeq.Select(item => (double)item.Item2).ToList(),
+            Labels: plotSeq.Select(item => item.Item1).ToList()
+        );
 
-        // doughnut.WithTitle("statistics of contributors")
-        //    .SavePNG("contributorStat", Width: 700, Height: 450);
+        doughnut.WithTitle("statistics of contributors")
+           .SavePNG("contributorStat", Width: 700, Height: 450);
     }
 }
