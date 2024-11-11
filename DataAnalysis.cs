@@ -26,20 +26,21 @@ class DataAnalysis
         {
             string pattern = @"\[(.*?)\]";
             var matches = Regex.Matches(v.Title, pattern);
-            return matches.Any() ? matches.Cast<Match>().Select(m => m.Groups[1].Value) : new[] { "unknown" };
+            return matches.Any() ? matches.Select(m => m.Groups[1].Value) : new[] { "unknown" };
         });
 
         var baseSeq = videoContributor.GroupBy(contributor => contributor)
                                       .OrderByDescending(item => item.Count())
                                       .ThenBy(item => item.Key.Length)
-                                      .ThenBy(item => item.Key);
+                                      .ThenBy(item => item.Key)
+                                      .ToList();
 
 
-        await MakeJSON(baseSeq);
+        await MakeJson(baseSeq);
         MakeChart(baseSeq);
     }
 
-    static async Task MakeJSON(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
+    static async Task MakeJson(List<IGrouping<string, string>> baseSeq)
     {
         var stat = baseSeq.ToDictionary(o => o.Key, o => (double)o.Count());
         stat.Add("total", stat.Values.Sum());
@@ -59,18 +60,18 @@ class DataAnalysis
         );
     }
 
-    static void MakeChart(IOrderedEnumerable<IGrouping<string, string>> baseSeq)
+    static void MakeChart(List<IGrouping<string, string>> baseSeq)
     {
         var plotSeq = baseSeq.Where(item => item.Key != "unknown")
                          .Select(item => new { key = item.Key, count = item.Count() })
                          .GroupBy(item => item.count)
                          .Select(item =>
                          {
-                             var seq = item.Select(item => item);
+                             // var seq = item.Select(item => item);
 
                              var detail = string.Join(
                                              ", ",
-                                            seq.Select(item => item.key)
+                                             item.Select(item => item.key)
                                                .OrderBy(item => item.Length)
                                                .ThenBy(item => item)
                                                .Take(3)
@@ -78,10 +79,10 @@ class DataAnalysis
 
                              // https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching
                              // https://dog0416.blogspot.com/2020/02/c-80-pattern-matching-enhancements.html
-                             string s = seq.Count() switch
+                             string s = item.Count() switch
                              {
-                                 > 3 => $"[{item.Key}*{seq.Count()} = {item.Key * seq.Count()}] {detail}, ... 等{seq.Count()}位",
-                                 > 1 => $"[{item.Key}*{seq.Count()} = {item.Key * seq.Count()}] {detail}",
+                                 > 3 => $"[{item.Key}*{item.Count()} = {item.Key * item.Count()}] {detail}, ... 等{item.Count()}位",
+                                 > 1 => $"[{item.Key}*{item.Count()} = {item.Key * item.Count()}] {detail}",
                                  1 => $"[{item.Key}] {detail}",
                                  _ => "" // seq.Count() 在此幾乎保證大於等於1，因此其餘狀況回傳空字串
                              };
@@ -112,7 +113,7 @@ class DataAnalysis
         #region ScottPlot
             // ScottPlot
             // var myplot = new ScottPlot.Plot();
-
+            //
             // double total = plotSeq.Select(x => x.Item2).Sum();
             // var slices = plotSeq.Select(item =>
             //                     {
@@ -121,28 +122,28 @@ class DataAnalysis
             //                             new ScottPlot.Color(string.Format("#{0:X6}", Guid.NewGuid().ToString().Substring(0, 6))),
             //                             $"{item.Item2 / total * 100:0.0}%"
             //                         );
-
+            //
             //                         slice.LabelFontSize = 20;
             //                         slice.LabelBold = true;
             //                         slice.LabelFontColor = new ScottPlot.Color("#ffffff");
-
+            //
             //                         slice.LegendText = item.Item1;
-
+            //
             //                         return slice;
             //                     })
             //                     .ToList();
             // var pie = myplot.Add.Pie(slices);
-
+            //
             // pie.DonutFraction = .6;
             // pie.SliceLabelDistance = 0.8;
-
-
+            //
+            //
             // myplot.Axes.Frameless();
             // myplot.HideAxesAndGrid();
             // // 目前沒辦法假名+漢字
             // myplot.Font.Automatic();
             // myplot.ShowLegend(Edge.Right);
-
+            //
             // myplot.SavePng("contributorStat.png", 1200, 800);
         #endregion
     }
