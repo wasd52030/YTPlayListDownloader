@@ -56,6 +56,23 @@ public static class Extensions
         return res;
     }
 
+    public static async Task<Stream> SeekTo(this IStreamInfo streamInfo, TimeSpan start)
+    {
+        var res = new MemoryStream();
+
+        var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
+                                    .OutputToPipe(new StreamPipeSink(res),
+                                                   options =>
+                                                   {
+                                                       options.ForceFormat("mp3");
+                                                       options.Seek(start);
+                                                   });
+        await ffmpeg.ProcessAsynchronously();
+        res.Position = 0;
+
+        return res;
+    }
+
     public static Stream AnnotateMp3Tag(this Stream stream, Video? playListVideoInfo, string queryId)
     {
         TagLib.Id3v2.Tag.DefaultVersion = 4;
