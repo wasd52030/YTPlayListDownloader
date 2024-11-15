@@ -42,10 +42,9 @@ public static class Extensions
                                     .OutputToPipe(new StreamPipeSink(res),
                                                    options =>
                                                    {
-                                                       options.ForceFormat("mp3");
-
                                                        // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
-                                                       options.WithAudioFilters(filter =>
+                                                       options.ForceFormat("mp3")
+                                                              .WithAudioFilters(filter =>
                                                        {
                                                            filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
                                                        });
@@ -64,8 +63,8 @@ public static class Extensions
                                     .OutputToPipe(new StreamPipeSink(res),
                                                    options =>
                                                    {
-                                                       options.ForceFormat("mp3");
-                                                       options.Seek(start);
+                                                       options.ForceFormat("mp3")
+                                                              .Seek(start);
                                                    });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
