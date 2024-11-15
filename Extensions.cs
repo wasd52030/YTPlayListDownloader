@@ -45,9 +45,9 @@ public static class Extensions
                                                        // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
                                                        options.ForceFormat("mp3")
                                                               .WithAudioFilters(filter =>
-                                                       {
-                                                           filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
-                                                       });
+                                                                {
+                                                                    filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
+                                                                });
                                                    });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
