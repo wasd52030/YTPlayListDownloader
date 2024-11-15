@@ -42,5 +42,3 @@
    - Command Example
       - dotnet run update --pl youtubePlaylistURL
       -  YTPlayListDownloader update --pl youtubePlaylistURL
-
-**本專案有加 github actions 做 contributor 統計與 video title 的自動更新，在動程式之前記得做 pull 之類的動作**
