@@ -34,7 +34,7 @@ public static class Extensions
     /// <param name="streamInfo"></param>
     /// <param name="maintrack"></param>
     /// <returns>Stream of audio</returns>
-    public static async Task<Stream> GetReStereoMp3Stream(this IStreamInfo streamInfo, int maintrack)
+    public static async Task<Stream> GetReStereoStream(this IStreamInfo streamInfo, int maintrack)
     {
         var res = new MemoryStream();
 

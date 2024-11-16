@@ -106,7 +106,7 @@ class Download : Collector
             {
                 if (vId == "QJq6GAZYH18")
                 {
-                    Mp3Stream = (await videoInfo.GetReStereoMp3Stream(1)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                    Mp3Stream = (await videoInfo.GetReStereoStream(1)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
