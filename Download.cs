@@ -83,7 +83,7 @@ class Download : Collector
         var vtitle = vinfo.Title;
         var vId = vinfo.Id;
         var PlaylistId = Video.PlaylistId;
-        Stream Mp3Stream = new MemoryStream();
+        Stream youtubeStream = new MemoryStream();
 
         var CustomVideoTitle = CustomVideoTitles?.items.FirstOrDefault(v => v.Id == vinfo.Id);
         vtitle = RemoveSpecialChar(CustomVideoTitle?.Title ?? vtitle);
@@ -106,7 +106,7 @@ class Download : Collector
             {
                 if (vId == "QJq6GAZYH18")
                 {
-                    Mp3Stream = (await videoInfo.GetReStereoStream(1)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                    youtubeStream = (await videoInfo.GetReStereoStream(1)).AnnotateTag(CustomVideoTitle, queryPlayListId);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
@@ -117,19 +117,19 @@ class Download : Collector
                 {
                     // reference -> https://www.c-sharpcorner.com/blogs/timespan-in-c-sharp
                     var start = new TimeSpan(0, 0, 11);
-                    Mp3Stream = (await videoInfo.SeekTo(start)).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                    youtubeStream = (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
                 }
             }
             else
             {
-                Mp3Stream = (await videoInfo.GetMp3Stream()).AnnotateMp3Tag(CustomVideoTitle, queryPlayListId);
+                youtubeStream = (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId);
                 await Task.Delay(1500);
             }
 
             using var fileStream = File.Create(filePath);
-            await Mp3Stream.CopyToAsync(fileStream);
+            await youtubeStream.CopyToAsync(fileStream);
             await Task.Delay(1500);
             return true;
         }
@@ -151,7 +151,6 @@ class Download : Collector
 
         var count = 0;
         var playListLength = videos.Count;
-        Stream Mp3Stream = new MemoryStream();
 
         // https://stackoverflow.com/questions/10806951/how-to-limit-the-amount-of-concurrent-async-i-o-operations
         var throttler = new SemaphoreSlim(initialCount: 10);

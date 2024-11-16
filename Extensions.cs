@@ -2,6 +2,7 @@ using YoutubeExplode.Videos.Streams;
 using System.Text.RegularExpressions;
 using FFMpegCore;
 using FFMpegCore.Pipes;
+using FFMpegCore.Enums;
 
 public static class Extensions
 {
@@ -15,7 +16,7 @@ public static class Extensions
         Console.WriteLine("]");
     }
 
-    public static async Task<Stream> GetMp3Stream(this IStreamInfo streamInfo)
+    public static async Task<Stream> GetStream(this IStreamInfo streamInfo)
     {
         var res = new MemoryStream();
 
@@ -45,9 +46,9 @@ public static class Extensions
                                                        // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
                                                        options.ForceFormat("mp3")
                                                               .WithAudioFilters(filter =>
-                                                                {
-                                                                    filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
-                                                                });
+                                                              {
+                                                                  filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
+                                                              });
                                                    });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
@@ -72,7 +73,7 @@ public static class Extensions
         return res;
     }
 
-    public static Stream AnnotateMp3Tag(this Stream stream, Video? playListVideoInfo, string queryId)
+    public static Stream AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId)
     {
         TagLib.Id3v2.Tag.DefaultVersion = 4;
         TagLib.Id3v2.Tag.ForceDefaultVersion = true;
@@ -80,32 +81,33 @@ public static class Extensions
         string pattern = @"\[(.*?)\]";
         var matches = Regex.Matches(playListVideoInfo.Title, pattern);
 
-        var res = new MemoryStream();
-
         try
         {
-            using var mp3 = TagLib.File.Create(new StreamFileAbstraction($"{playListVideoInfo.Title}.mp3", stream));
+            using var file = TagLib.File.Create(new StreamFileAbstraction($"{playListVideoInfo.Title}.mp3", stream));
+
+            var titleWithoutContributors = playListVideoInfo.Title.Split("]").Last().Trim();
+            file.Tag.Title = titleWithoutContributors;
 
             if (matches.Any())
             {
                 var contributors = matches.Select(match => match.Groups[1].Value);
 
-                mp3.Tag.Performers = contributors.ToArray();
+                file.Tag.Performers = contributors.ToArray();
             }
 
             if (playListVideoInfo.comment != null)
             {
-                mp3.Tag.Comment = playListVideoInfo.comment;
+                file.Tag.Comment = playListVideoInfo.comment;
             }
 
             var p = playListVideoInfo.Playlists.FirstOrDefault(i => i.Id == queryId);
             if (p != null)
             {
-                mp3.Tag.Album = $"{p.Owner} - {p.Title}";
-                mp3.Tag.Track = (uint)p.Position;
+                file.Tag.Album = $"{p.Owner} - {p.Title}";
+                file.Tag.Track = (uint)p.Position;
             }
 
-            mp3.Save();
+            file.Save();
         }
         catch (System.Exception)
         {
