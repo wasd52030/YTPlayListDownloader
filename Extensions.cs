@@ -2,7 +2,7 @@ using YoutubeExplode.Videos.Streams;
 using System.Text.RegularExpressions;
 using FFMpegCore;
 using FFMpegCore.Pipes;
-using FFMpegCore.Enums;
+using TagLib.Id3v2;
 
 public static class Extensions
 {
@@ -56,7 +56,7 @@ public static class Extensions
         return res;
     }
 
-    public static async Task<Stream> SeekTo(this IStreamInfo streamInfo, TimeSpan start)
+    public static async Task<Stream> SeekTo(this IStreamInfo streamInfo, TimeSpan? start)
     {
         var res = new MemoryStream();
 
@@ -73,13 +73,50 @@ public static class Extensions
         return res;
     }
 
-    public static Stream AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId)
+    public static async Task<Stream> SeekTo(this Stream stream, TimeSpan? start)
+    {
+        var res = new MemoryStream();
+
+        var ffmpeg = FFMpegArguments.FromPipeInput(new StreamPipeSource(stream))
+                                    .OutputToPipe(new StreamPipeSink(res),
+                                                   options =>
+                                                   {
+                                                       options.ForceFormat("mp3")
+                                                              .Seek(start);
+                                                   });
+        await ffmpeg.ProcessAsynchronously();
+        res.Position = 0;
+
+        return res;
+    }
+
+    public static async Task<Stream> getPictureStream(this YoutubeExplode.Videos.Video video)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
+
+        var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+        var url = Thumbnails.LastOrDefault()!.Url;
+        var response = await httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsStreamAsync();
+    }
+
+    public static async Task<byte[]> ToByteArray(this Stream input)
+    {
+        using MemoryStream ms = new MemoryStream();
+        await input.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
+    public static async Task<Stream> AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId, Stream youtubeCover)
     {
         TagLib.Id3v2.Tag.DefaultVersion = 4;
         TagLib.Id3v2.Tag.ForceDefaultVersion = true;
 
         string pattern = @"\[(.*?)\]";
-        var matches = Regex.Matches(playListVideoInfo.Title, pattern);
+        var matches = Regex.Matches(playListVideoInfo!.Title, pattern);
 
         try
         {
@@ -106,6 +143,16 @@ public static class Extensions
                 file.Tag.Album = $"{p.Owner} - {p.Title}";
                 file.Tag.Track = (uint)p.Position;
             }
+
+            AttachmentFrame cover = new AttachmentFrame
+            {
+                Type = TagLib.PictureType.FrontCover,
+                Description = "Cover",
+                MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
+                Data = await youtubeCover.ToByteArray(),
+                TextEncoding = TagLib.StringType.UTF16
+            };
+            file.Tag.Pictures = new TagLib.IPicture[] { cover };
 
             file.Save();
         }

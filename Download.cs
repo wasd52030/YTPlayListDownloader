@@ -71,7 +71,7 @@ class Download : Collector
 
     private bool IsNeedSeek(VideoId videoId)
     {
-        string[] special = new string[] { "iASoRE5k0Vw" };
+        string[] special = new string[] { "iASoRE5k0Vw", "QJq6GAZYH18" };
 
         return special.Contains(videoId.ToString());
     }
@@ -81,7 +81,7 @@ class Download : Collector
 
         var vinfo = await yt.Videos.GetAsync(Video.Url);
         var vtitle = vinfo.Title;
-        var vId = vinfo.Id;
+        var vId = vinfo.Id.ToString();
         var PlaylistId = Video.PlaylistId;
         Stream youtubeStream = new MemoryStream();
 
@@ -100,31 +100,36 @@ class Download : Collector
             var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
             var videoInfo = videotManifest.GetAudioOnlyStreams()
                                           .GetWithHighestBitrate();
+            var youtubeCover = await vinfo.getPictureStream();
 
 
-            if (IsNeedReStereo(vId))
+            if (IsNeedReStereo(vId) && IsNeedSeek(vId))
             {
+                // reference -> https://www.c-sharpcorner.com/blogs/timespan-in-c-sharp
                 if (vId == "QJq6GAZYH18")
                 {
-                    youtubeStream = (await videoInfo.GetReStereoStream(1)).AnnotateTag(CustomVideoTitle, queryPlayListId);
+                    var start = new TimeSpan(0, 0, 40);
+                    youtubeStream = await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
             }
             else if (IsNeedSeek(vId))
             {
-                if (vId == "iASoRE5k0Vw")
+                TimeSpan? start = vId switch
                 {
-                    // reference -> https://www.c-sharpcorner.com/blogs/timespan-in-c-sharp
-                    var start = new TimeSpan(0, 0, 11);
-                    youtubeStream = (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId);
-                    await Task.Delay(1500);
-                    Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
-                }
+                    "iASoRE5k0Vw" => new TimeSpan(0, 0, 11),
+                    "QJq6GAZYH18" => new TimeSpan(0, 0, 40),
+                    _ => null
+                };
+
+                youtubeStream = await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                await Task.Delay(1500);
+                Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
             }
             else
             {
-                youtubeStream = (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId);
+                youtubeStream = await (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
                 await Task.Delay(1500);
             }
 
