@@ -83,18 +83,18 @@ class AutoTitle : Collector
         // jsonContent!.items = await UpdatePlayListInfo(await Update(jsonContent.items));
         await UpdatePlayListInfo(await Update(jsonContent.items));
 
-        // if (jsonContent != null)
-        // {
-        //     jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
+        if (jsonContent != null)
+        {
+            jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
 
-        //     var finalJson = JsonSerializer.Serialize<Videos>(
-        //         jsonContent,
-        //         new JsonSerializerOptions
-        //         { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
-        //     );
+            var finalJson = JsonSerializer.Serialize<Videos>(
+                jsonContent,
+                new JsonSerializerOptions
+                { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
+            );
 
-        //     await File.WriteAllTextAsync("./customTitle.json", finalJson);
-        // }
+            await File.WriteAllTextAsync("./customTitle.json", finalJson);
+        }
 
         watch.Stop();
         Console.WriteLine($"update successful ☑ {watch.Elapsed}");
