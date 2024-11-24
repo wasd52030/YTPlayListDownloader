@@ -51,8 +51,12 @@ public static class Extensions
                             filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
                         });
                 });
-        await ffmpeg.ProcessAsynchronously();
-        res.Position = 0;
+
+        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+        if (ffmpegRes)
+        {
+            res.Position = 0;
+        }
 
         return res;
     }
@@ -68,8 +72,12 @@ public static class Extensions
                     options.ForceFormat("mp3")
                         .Seek(start);
                 });
-        await ffmpeg.ProcessAsynchronously();
-        res.Position = 0;
+        
+        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+        if (ffmpegRes)
+        {
+            res.Position = 0;
+        }
 
         return res;
     }
@@ -85,8 +93,12 @@ public static class Extensions
                     options.ForceFormat("mp3")
                         .Seek(start);
                 });
-        await ffmpeg.ProcessAsynchronously();
-        res.Position = 0;
+        
+        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+        if (ffmpegRes)
+        {
+            res.Position = 0;
+        }
 
         return res;
     }
