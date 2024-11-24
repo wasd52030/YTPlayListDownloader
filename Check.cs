@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Encodings.Web;
+using YTPlayListDownloader.Models;
 
 class Check
 {
@@ -15,7 +16,8 @@ class Check
 
 
         // reference -> https://github.com/dotnet/runtime/issues/35281
-        string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
+        string jsonFile =
+            await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
         var jsonContent = JsonSerializer.Deserialize<Videos>(
             jsonFile,
             new JsonSerializerOptions
@@ -30,10 +32,10 @@ class Check
         var RemoteVideos = playListInfo.videos.Select(v => v.Id.ToString());
 
         var LDiff = LocalVideos.Except(RemoteVideos)
-                               .Select(i => jsonContent.items.FirstOrDefault(v => i == v.Id));
+            .Select(i => jsonContent.items.FirstOrDefault(v => i == v.Id));
 
         var RDiff = RemoteVideos.Except(LocalVideos)
-                                .Select(i => playListInfo.videos.FirstOrDefault(v => v.Id == i));
+            .Select(i => playListInfo.videos.FirstOrDefault(v => v.Id == i));
 
 
         Console.WriteLine("On Local View");

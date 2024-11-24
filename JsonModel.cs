@@ -2,23 +2,18 @@ using System.Text.Json.Serialization;
 
 public class Videos
 {
-    [JsonPropertyName("videos")]
-    public HashSet<Video> items { get; set; }
+    [JsonPropertyName("videos")] public HashSet<Video> items { get; set; }
 }
 
 public class PlaylistInfo : IEquatable<PlaylistInfo>
 {
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; }
 
-    [JsonPropertyName("owner")]
-    public string Owner { get; set; }
+    [JsonPropertyName("owner")] public string Owner { get; set; }
 
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; }
 
-    [JsonPropertyName("position")]
-    public int Position { get; set; }
+    [JsonPropertyName("position")] public int Position { get; set; }
 
     public PlaylistInfo(string id, string owner, string title, int position)
     {
@@ -49,19 +44,14 @@ public class PlaylistInfo : IEquatable<PlaylistInfo>
 
 public class Video : IEquatable<Video>
 {
+    [JsonPropertyName("id")] public string Id { get; set; }
 
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; }
 
 
-    [JsonPropertyName("comment")]
-    public string? comment { get; set; }
+    [JsonPropertyName("comment")] public string? comment { get; set; }
 
-    [JsonPropertyName("playlists")]
-    public HashSet<PlaylistInfo> Playlists { get; set; }
+    [JsonPropertyName("playlists")] public HashSet<PlaylistInfo> Playlists { get; set; }
 
     public Video(string id, string title, string? comment)
     {

@@ -1,4 +1,6 @@
 using YoutubeExplode;
+using YTPlayListDownloader.Models;
+
 abstract class Collector
 {
     // reference -> https://github.com/Tyrrrz/YoutubeExplode
@@ -23,7 +25,9 @@ abstract class Collector
         return input;
     }
 
-    public static async Task<(string id, string title, string owner, List<YoutubeExplode.Playlists.PlaylistVideo> videos)> GetPlayListInfo(string url)
+    public static async
+        Task<(string id, string title, string owner, List<YoutubeExplode.Playlists.PlaylistVideo> videos)>
+        GetPlayListInfo(string url)
     {
         var yt = new YoutubeClient();
         var playlist = await yt.Playlists.GetAsync(url);

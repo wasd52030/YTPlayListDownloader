@@ -41,16 +41,23 @@
 //                               蒙主應許 永無BUG                   
 
 using System.CommandLine;
+using YTPlayListDownloader.Models;
 
 async Task Main()
 {
+    // using var db = new DBContext();
+    // foreach (var video in db.Video)
+    // {
+    //     Console.WriteLine(video);
+    // }
+
     // root command
     var rootCommand = new RootCommand("youtube播放清單下載");
 
     var playlistOption = new Option<string>
     (aliases: new string[] { "--playlist", "--pl" },
-    description: "youtube playlist url",
-    getDefaultValue: () => "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip");
+        description: "youtube playlist url",
+        getDefaultValue: () => "https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip");
 
     // download command
     var downloadCommand = new Command(name: "download", description: "下載")
@@ -67,7 +74,7 @@ async Task Main()
 
 
     // check command
-    var checkCommand = new Command(name: "check", description: "查詢custom.json裡面的內容與指定的播放清單內容之差異")
+    var checkCommand = new Command(name: "check", description: "查詢資料庫裡面的內容與指定的播放清單內容之差異")
     {
         playlistOption
     };

@@ -13,6 +13,7 @@ public static class Extensions
         {
             Console.WriteLine($"  {item},");
         }
+
         Console.WriteLine("]");
     }
 
@@ -21,8 +22,8 @@ public static class Extensions
         var res = new MemoryStream();
 
         var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
-                             .OutputToPipe(new StreamPipeSink(res),
-                                            options => options.ForceFormat("mp3"));
+            .OutputToPipe(new StreamPipeSink(res),
+                options => options.ForceFormat("mp3"));
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
@@ -40,16 +41,16 @@ public static class Extensions
         var res = new MemoryStream();
 
         var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
-                                    .OutputToPipe(new StreamPipeSink(res),
-                                                   options =>
-                                                   {
-                                                       // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
-                                                       options.ForceFormat("mp3")
-                                                              .WithAudioFilters(filter =>
-                                                              {
-                                                                  filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
-                                                              });
-                                                   });
+            .OutputToPipe(new StreamPipeSink(res),
+                options =>
+                {
+                    // reference -> https://hackmd.io/@kd01/HkiPmhg3d#複製聲道
+                    options.ForceFormat("mp3")
+                        .WithAudioFilters(filter =>
+                        {
+                            filter.Pan("stereo", new string[] { $"c0=c{maintrack}", $"c1=c{maintrack}" });
+                        });
+                });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
@@ -61,12 +62,12 @@ public static class Extensions
         var res = new MemoryStream();
 
         var ffmpeg = FFMpegArguments.FromUrlInput(new Uri(streamInfo.Url))
-                                    .OutputToPipe(new StreamPipeSink(res),
-                                                   options =>
-                                                   {
-                                                       options.ForceFormat("mp3")
-                                                              .Seek(start);
-                                                   });
+            .OutputToPipe(new StreamPipeSink(res),
+                options =>
+                {
+                    options.ForceFormat("mp3")
+                        .Seek(start);
+                });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
@@ -78,12 +79,12 @@ public static class Extensions
         var res = new MemoryStream();
 
         var ffmpeg = FFMpegArguments.FromPipeInput(new StreamPipeSource(stream))
-                                    .OutputToPipe(new StreamPipeSink(res),
-                                                   options =>
-                                                   {
-                                                       options.ForceFormat("mp3")
-                                                              .Seek(start);
-                                                   });
+            .OutputToPipe(new StreamPipeSink(res),
+                options =>
+                {
+                    options.ForceFormat("mp3")
+                        .Seek(start);
+                });
         await ffmpeg.ProcessAsynchronously();
         res.Position = 0;
 
@@ -110,7 +111,8 @@ public static class Extensions
         return ms.ToArray();
     }
 
-    public static async Task<Stream> AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId, Stream youtubeCover)
+    public static async Task<Stream> AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId,
+        Stream youtubeCover)
     {
         TagLib.Id3v2.Tag.DefaultVersion = 4;
         TagLib.Id3v2.Tag.ForceDefaultVersion = true;

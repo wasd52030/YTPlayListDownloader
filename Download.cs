@@ -6,10 +6,13 @@ using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using YoutubeExplode.Videos;
+using YTPlayListDownloader.Models;
 
 class Download : Collector
 {
-    public Download(string url) : base(url) { }
+    public Download(string url) : base(url)
+    {
+    }
 
     private void AnnotateMp3Tag(string filePath, string vTitle, string? comment)
     {
@@ -34,6 +37,7 @@ class Download : Collector
             {
                 mp3.Tag.Comment = comment;
             }
+
             mp3.Save();
         }
         catch (System.Exception e)
@@ -78,7 +82,6 @@ class Download : Collector
 
     private async Task<bool> DownloadVideo(string queryPlayListId, PlaylistVideo Video, Videos? CustomVideoTitles)
     {
-
         var vinfo = await yt.Videos.GetAsync(Video.Url);
         var vtitle = vinfo.Title;
         var vId = vinfo.Id.ToString();
@@ -99,7 +102,7 @@ class Download : Collector
         {
             var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
             var videoInfo = videotManifest.GetAudioOnlyStreams()
-                                          .GetWithHighestBitrate();
+                .GetWithHighestBitrate();
             var youtubeCover = await vinfo.getPictureStream();
 
 
@@ -109,7 +112,9 @@ class Download : Collector
                 if (vId == "QJq6GAZYH18")
                 {
                     var start = new TimeSpan(0, 0, 40);
-                    youtubeStream = await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                    youtubeStream =
+                        await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideoTitle,
+                            queryPlayListId, youtubeCover);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
@@ -123,13 +128,15 @@ class Download : Collector
                     _ => null
                 };
 
-                youtubeStream = await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                youtubeStream =
+                    await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
                 await Task.Delay(1500);
                 Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
             }
             else
             {
-                youtubeStream = await (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                youtubeStream =
+                    await (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
                 await Task.Delay(1500);
             }
 
@@ -146,7 +153,8 @@ class Download : Collector
 
     private async Task DownlaodList(string queryPlayListId, Queue<PlaylistVideo> videos)
     {
-        string jsonFile = await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
+        string jsonFile =
+            await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
         var jsonContent = JsonSerializer.Deserialize<Videos>(
             jsonFile,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
@@ -193,6 +201,7 @@ class Download : Collector
                     {
                         jsonContent?.items.Add(new Video(vId, vtitle, null));
                     }
+
                     await throttler.WaitAsync();
 
                     DownloadTasks.Add(Task.Run(async () =>
@@ -212,8 +221,10 @@ class Download : Collector
                             else
                             {
                                 Console.WriteLine($"{filePath.Split('/').Last()} ☑ {watch.Elapsed}");
-                                Console.WriteLine($"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
-                                Console.WriteLine($"\tPlease make backups in advance, or seek alternative services for downloading.");
+                                Console.WriteLine(
+                                    $"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                                Console.WriteLine(
+                                    $"\tPlease make backups in advance, or seek alternative services for downloading.");
                             }
                         }
                         catch (System.Exception e)
@@ -229,7 +240,6 @@ class Download : Collector
                     }));
                     videos.Dequeue();
                 }
-
             }
             catch (System.Exception e)
             {
@@ -258,7 +268,8 @@ class Download : Collector
 
             var finalJson = JsonSerializer.Serialize<Videos>(
                 jsonContent,
-                new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
+                new JsonSerializerOptions
+                    { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
             );
 
             // current directory is in download folder
@@ -287,6 +298,7 @@ class Download : Collector
         {
             Directory.CreateDirectory($"./{name}");
         }
+
         Directory.SetCurrentDirectory($"./{name}");
 
         // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
