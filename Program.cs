@@ -45,7 +45,7 @@ using YTPlayListDownloader.Models;
 
 async Task Main()
 {
-    // using var db = new DBContext();
+    using var db = new DBContext();
     // foreach (var video in db.Video)
     // {
     //     Console.WriteLine(video);
@@ -88,7 +88,7 @@ async Task Main()
         playlistOption
     };
     rootCommand.AddCommand(statCommand);
-    statCommand.SetHandler(async () => await DataAnalysis.Invoke());
+    statCommand.SetHandler(async () => await DataAnalysis.Invoke(db));
 
     // update command
     var updateCommand = new Command(name: "update", description: "自動取得在播放清單中的影片資訊，省得手動輸入")

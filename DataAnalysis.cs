@@ -8,7 +8,7 @@ using YTPlayListDownloader.Models;
 
 class DataAnalysis
 {
-    public static async Task Invoke()
+    public static async Task Invoke(DBContext db)
     {
         string jsonFile =
             await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
@@ -23,7 +23,8 @@ class DataAnalysis
 
         // reference -> https://ithelp.ithome.com.tw/articles/10195017
         // reference -> https://brooke2010.github.io/2015/03/11/linq-query/
-        var videoContributor = jsonContent!.items
+        // reference -> https://stackoverflow.com/questions/5179341/a-lambda-expression-with-a-statement-body-cannot-be-converted-to-an-expression
+        var videoContributor = db.Video.AsEnumerable()
             .SelectMany(v =>
             {
                 string pattern = @"\[(.*?)\]";
