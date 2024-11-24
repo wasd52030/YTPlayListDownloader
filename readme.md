@@ -24,7 +24,7 @@
 - stat : 從`customName.json`中統計影片貢獻者(contributor，可以是歌手、演奏家、內容創作者等等)
      - parameters:
         - --pl: youtube播放清單網址，預設值為 https://www.youtube.com/playlist?list=PLdx_s59BrvfXJXyoU5BHpUkZGmZL0g3Ip
-      - contributor 以中括號的形式標註在`customName.json`的影片紀錄中的title欄位，contributor 跟影片標題以空格分開
+        - contributor 以中括號的形式標註在`customName.json`的影片紀錄中的title欄位，contributor 跟影片標題以空格分開
         - Example
           ```json
           {
