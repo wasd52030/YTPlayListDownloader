@@ -41,6 +41,7 @@
 //                               蒙主應許 永無BUG                   
 
 using System.CommandLine;
+using YTPlayListDownloader.Collectors;
 using YTPlayListDownloader.Models;
 
 async Task Main()

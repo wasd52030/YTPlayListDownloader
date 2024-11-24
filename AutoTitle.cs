@@ -1,7 +1,10 @@
+namespace YTPlayListDownloader.Collectors;
+
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using Microsoft.EntityFrameworkCore;
 using YTPlayListDownloader.Models;
 
 class AutoTitle : Collector
@@ -21,13 +24,13 @@ class AutoTitle : Collector
         return newVideos;
     }
 
-    private async Task<HashSet<Video>> UpdatePlayListInfo(IEnumerable<Video> videos)
+    private async Task UpdatePlayListInfo(IEnumerable<Video> videos)
     {
         var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
         var PlaylistInfo = await yt.Playlists.GetAsync(url);
         string[] special = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
 
-        return videos.Select(v =>
+        var w = videos.Select(v =>
             {
                 var InPlaylist = playList.FirstOrDefault((playList) => playList.Id == v.Id);
                 if (InPlaylist != null)
@@ -40,6 +43,7 @@ class AutoTitle : Collector
                     var check = v.Playlists.FirstOrDefault((playList) => playList.Id == PlaylistInfo.Id);
                     if (check != null)
                     {
+                        
                         v.Playlists = v.Playlists.Where(playList => playList.Id == PlaylistInfo.Id)
                             .Select(ytAlbum =>
                             {
@@ -54,13 +58,12 @@ class AutoTitle : Collector
                         var owner = PlaylistInfo.Author?.ChannelTitle!.Replace("by", "").Trim();
                         var title = PlaylistInfo.Title;
                         var track = playList.IndexOf(InPlaylist) + 1;
-                        v.Playlists.Add(new PlaylistInfo(id, owner, title, track));
+                        // v.Playlists.Add(new PlaylistInfo(id, owner, title, track));
                     }
                 }
 
                 return v;
-            })
-            .ToHashSet();
+            });
     }
 
     public override async Task Invoke()
@@ -77,20 +80,21 @@ class AutoTitle : Collector
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         );
 
-        jsonContent!.items = await UpdatePlayListInfo(await Update(jsonContent.items));
+        // jsonContent!.items = await UpdatePlayListInfo(await Update(jsonContent.items));
+        await UpdatePlayListInfo(await Update(jsonContent.items));
 
-        if (jsonContent != null)
-        {
-            jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
+        // if (jsonContent != null)
+        // {
+        //     jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
 
-            var finalJson = JsonSerializer.Serialize<Videos>(
-                jsonContent,
-                new JsonSerializerOptions
-                    { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
-            );
+        //     var finalJson = JsonSerializer.Serialize<Videos>(
+        //         jsonContent,
+        //         new JsonSerializerOptions
+        //         { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
+        //     );
 
-            await File.WriteAllTextAsync("./customTitle.json", finalJson);
-        }
+        //     await File.WriteAllTextAsync("./customTitle.json", finalJson);
+        // }
 
         watch.Stop();
         Console.WriteLine($"update successful ☑ {watch.Elapsed}");

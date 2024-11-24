@@ -17,10 +17,10 @@ public class PlaylistInfo : IEquatable<PlaylistInfo>
 
     public PlaylistInfo(string id, string owner, string title, int position)
     {
-        this.Id = id;
-        this.Owner = owner;
-        this.Title = title;
-        this.Position = position;
+        Id = id;
+        Owner = owner;
+        Title = title;
+        Position = position;
     }
 
     public override int GetHashCode()
@@ -37,7 +37,7 @@ public class PlaylistInfo : IEquatable<PlaylistInfo>
     public bool Equals(PlaylistInfo? other)
     {
         if (other == null) return false;
-        return this.Id == other.Id;
+        return Id == other.Id;
     }
 }
 
@@ -55,10 +55,10 @@ public class Video : IEquatable<Video>
 
     public Video(string id, string title, string? comment)
     {
-        this.Id = id;
-        this.Title = title;
+        Id = id;
+        Title = title;
         this.comment = comment;
-        this.Playlists = new HashSet<PlaylistInfo>();
+        Playlists = new HashSet<PlaylistInfo>();
     }
 
     public override int GetHashCode()
@@ -79,6 +79,6 @@ public class Video : IEquatable<Video>
 
     public bool Equals(Video? other)
     {
-        return this.Id == other.Id;
+        return Id == other.Id;
     }
 }

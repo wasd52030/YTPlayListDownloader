@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using YoutubeExplode;
 using YTPlayListDownloader.Models;
+
+namespace YTPlayListDownloader.Collectors;
 
 abstract class Collector
 {

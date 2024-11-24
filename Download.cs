@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using YoutubeExplode.Videos;
 using YTPlayListDownloader.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace YTPlayListDownloader.Collectors;
 
 class Download : Collector
 {
