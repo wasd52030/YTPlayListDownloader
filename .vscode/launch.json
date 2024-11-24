@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net6.0/YTPlayListDownloader.dll",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/YTPlayListDownloader.dll",
             "args": [
                 "download"
             ],
@@ -28,7 +28,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net6.0/YTPlayListDownloader.dll",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/YTPlayListDownloader.dll",
             "args": [
                 "check",
                 // "--pl","https://www.youtube.com/playlist?list=PLdx_s59BrvfVJdXVitsPHvXavY7Z-NhQx"
@@ -47,7 +47,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net6.0/YTPlayListDownloader.dll",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/YTPlayListDownloader.dll",
             "args": [
                 "stat"
             ],
@@ -64,7 +64,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net6.0/YTPlayListDownloader.dll",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/YTPlayListDownloader.dll",
             "args": [
                 "update"
             ],
