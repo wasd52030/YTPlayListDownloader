@@ -154,7 +154,8 @@ public static class Extensions
             var p = playListVideoInfo.Playlists.FirstOrDefault(i => i.Id == queryId);
             if (p != null)
             {
-                file.Tag.Album = $"{p.Owner} - {p.Title}";
+                file.Tag.Album = $"{p.Title}";
+                file.Tag.AlbumArtists=new string[]{p.Owner};
                 file.Tag.Track = (uint)p.Position;
             }
 
