@@ -52,7 +52,7 @@ public static class Extensions
                         });
                 });
 
-        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+        var ffmpegRes = await ffmpeg.ProcessAsynchronously();
         if (ffmpegRes)
         {
             res.Position = 0;
@@ -72,8 +72,8 @@ public static class Extensions
                     options.ForceFormat("mp3")
                         .Seek(start);
                 });
-        
-        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+
+        var ffmpegRes = await ffmpeg.ProcessAsynchronously();
         if (ffmpegRes)
         {
             res.Position = 0;
@@ -93,8 +93,8 @@ public static class Extensions
                     options.ForceFormat("mp3")
                         .Seek(start);
                 });
-        
-        var ffmpegRes=await ffmpeg.ProcessAsynchronously();
+
+        var ffmpegRes = await ffmpeg.ProcessAsynchronously();
         if (ffmpegRes)
         {
             res.Position = 0;
@@ -103,14 +103,14 @@ public static class Extensions
         return res;
     }
 
-    public static async Task<Stream> getPictureStream(this YoutubeExplode.Videos.Video video)
+    public static async Task<Stream> getPictureStream(this YoutubeExplode.Videos.Video video, string PictureUrl)
     {
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
 
-        var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
-        var url = Thumbnails.LastOrDefault()!.Url;
-        var response = await httpClient.GetAsync(url);
+        // var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+        // var url = Thumbnails.LastOrDefault()!.Url;
+        var response = await httpClient.GetAsync(PictureUrl);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadAsStreamAsync();
@@ -155,7 +155,7 @@ public static class Extensions
             if (p != null)
             {
                 file.Tag.Album = $"{p.Title}";
-                file.Tag.AlbumArtists=new string[]{p.Owner};
+                file.Tag.AlbumArtists = new string[] { p.Owner };
                 file.Tag.Track = (uint)p.Position;
             }
 
@@ -163,7 +163,7 @@ public static class Extensions
             {
                 Type = TagLib.PictureType.FrontCover,
                 Description = "Cover",
-                MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
+                MimeType = System.Net.Mime.MediaTypeNames.Image.Png,
                 Data = await youtubeCover.ToByteArray(),
                 TextEncoding = TagLib.StringType.UTF16
             };

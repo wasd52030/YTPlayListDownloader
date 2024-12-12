@@ -6,8 +6,7 @@ using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using YoutubeExplode.Videos;
-using YTPlayListDownloader.Models;
-using Microsoft.EntityFrameworkCore;
+using YoutubeExplode;
 
 namespace YTPlayListDownloader.Collectors;
 
@@ -91,8 +90,8 @@ class Download : Collector
         var PlaylistId = Video.PlaylistId;
         Stream youtubeStream = new MemoryStream();
 
-        var CustomVideoTitle = CustomVideoTitles?.items.FirstOrDefault(v => v.Id == vinfo.Id);
-        vtitle = RemoveSpecialChar(CustomVideoTitle?.Title ?? vtitle);
+        var CustomVideo = CustomVideoTitles?.items.FirstOrDefault(v => v.Id == vinfo.Id);
+        vtitle = RemoveSpecialChar(CustomVideo?.Title ?? vtitle);
         var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
         // 可能會炸的檢查
@@ -106,7 +105,11 @@ class Download : Collector
             var videotManifest = await yt.Videos.Streams.GetManifestAsync(vId);
             var videoInfo = videotManifest.GetAudioOnlyStreams()
                 .GetWithHighestBitrate();
-            var youtubeCover = await vinfo.getPictureStream();
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
+
+            var youtubeCover = await vinfo.getPictureStream(CustomVideo.CoverUrl);
 
 
             if (IsNeedReStereo(vId) && IsNeedSeek(vId))
@@ -116,7 +119,7 @@ class Download : Collector
                 {
                     var start = new TimeSpan(0, 0, 40);
                     youtubeStream =
-                        await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideoTitle,
+                        await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideo,
                             queryPlayListId, youtubeCover);
                     await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
@@ -132,14 +135,14 @@ class Download : Collector
                 };
 
                 youtubeStream =
-                    await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                    await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideo, queryPlayListId, youtubeCover);
                 await Task.Delay(1500);
                 Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
             }
             else
             {
                 youtubeStream =
-                    await (await videoInfo.GetStream()).AnnotateTag(CustomVideoTitle, queryPlayListId, youtubeCover);
+                    await (await videoInfo.GetStream()).AnnotateTag(CustomVideo, queryPlayListId, youtubeCover);
                 await Task.Delay(1500);
             }
 
@@ -184,6 +187,9 @@ class Download : Collector
             var vtitle = vinfo.Title;
             var vId = vinfo.Id;
 
+            var Thumbnails = vinfo.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+            var url = Thumbnails.LastOrDefault()!.Url;
+
             try
             {
                 count++;
@@ -202,7 +208,7 @@ class Download : Collector
                 {
                     if (v == null)
                     {
-                        jsonContent?.items.Add(new Video(vId, vtitle, null));
+                        jsonContent?.items.Add(new Video(vId, vtitle, null, url));
                     }
 
                     await throttler.WaitAsync();
@@ -272,7 +278,7 @@ class Download : Collector
             var finalJson = JsonSerializer.Serialize<Videos>(
                 jsonContent,
                 new JsonSerializerOptions
-                    { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
+                { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
             );
 
             // current directory is in download folder
@@ -282,11 +288,40 @@ class Download : Collector
         }
     }
 
+    // for update Video's Front Cover
+    private async Task UpdateVideoFrontCover()
+    {
+        string jsonFile =
+            await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
+        var jsonContent = JsonSerializer.Deserialize<Videos>(
+            jsonFile,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        );
+
+        var k = jsonContent.items.Select(async video =>
+        {
+            var yt = new YoutubeClient();
+            var vinfo = await yt.Videos.GetAsync($"https://www.youtube.com/watch?v={video.Id}");
+
+            var Thumbnails = vinfo.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+            var CoverUrl = Thumbnails.LastOrDefault()!.Url;
+
+            video.CoverUrl = CoverUrl;
+
+            return video;
+        })
+        .Select(video => video.Result);
+
+        Console.WriteLine();
+    }
+
 
     //reference -> https://csharpkh.blogspot.com/2017/10/c-async-void-async-task.html
     public override async Task Invoke()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        await UpdateVideoFrontCover();
 
         Stopwatch watch = new Stopwatch();
         watch.Start();
@@ -305,7 +340,7 @@ class Download : Collector
         Directory.SetCurrentDirectory($"./{name}");
 
         // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
-        await DownlaodList(playListInfo.id, videoQueue);
+        // await DownlaodList(playListInfo.id, videoQueue);
 
         watch.Stop();
         Console.WriteLine($"執行時間: {watch.Elapsed}");

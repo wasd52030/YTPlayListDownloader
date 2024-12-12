@@ -51,14 +51,17 @@ public class Video : IEquatable<Video>
 
     [JsonPropertyName("comment")] public string? comment { get; set; }
 
+    [JsonPropertyName("CoverUrl")] public string CoverUrl { get; set; }
+
     [JsonPropertyName("playlists")] public HashSet<PlaylistInfo> Playlists { get; set; }
 
-    public Video(string id, string title, string? comment)
+    public Video(string id, string title, string? comment, string coverUrl)
     {
         Id = id;
         Title = title;
         this.comment = comment;
         Playlists = new HashSet<PlaylistInfo>();
+        CoverUrl = coverUrl;
     }
 
     public override int GetHashCode()

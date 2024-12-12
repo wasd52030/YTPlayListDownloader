@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
-using Microsoft.EntityFrameworkCore;
-using YTPlayListDownloader.Models;
 
 class AutoTitle : Collector
 {
@@ -15,9 +13,18 @@ class AutoTitle : Collector
 
     private async Task<IEnumerable<Video>> Update(HashSet<Video> videos)
     {
+
+
         var playList = await yt.Playlists.GetVideosAsync(url).ToListAsync();
         var newVideos = playList.Where(playList => !videos.Any(video => video.Id == playList.Id))
-            .Select(video => new Video(video.Id, video.Title, ""))
+            .Select(video =>
+            {
+
+                var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+                var url = Thumbnails.LastOrDefault()!.Url;
+
+                return new Video(video.Id, video.Title, "", url);
+            })
             .Concat(videos);
 
         Console.WriteLine($"origin = {videos.Count}, updated = {newVideos.Count()}");
@@ -64,7 +71,7 @@ class AutoTitle : Collector
 
                  return v;
              })
-             .ToHashSet();;
+             .ToHashSet(); ;
     }
 
     public override async Task Invoke()
