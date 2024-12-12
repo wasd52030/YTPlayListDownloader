@@ -4,11 +4,10 @@ using System.Text.RegularExpressions;
 using Plotly.NET.ImageExport;
 using Plotly.NET;
 using ScottPlot;
-using YTPlayListDownloader.Models;
 
 class DataAnalysis
 {
-    public static async Task Invoke(DBContext db)
+    public static async Task Invoke()
     {
         string jsonFile =
             await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
@@ -24,7 +23,7 @@ class DataAnalysis
         // reference -> https://ithelp.ithome.com.tw/articles/10195017
         // reference -> https://brooke2010.github.io/2015/03/11/linq-query/
         // reference -> https://stackoverflow.com/questions/5179341/a-lambda-expression-with-a-statement-body-cannot-be-converted-to-an-expression
-        var videoContributor = db.Video.AsEnumerable()
+        var videoContributor = jsonContent!.items
             .SelectMany(v =>
             {
                 string pattern = @"\[(.*?)\]";

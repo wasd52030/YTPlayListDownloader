@@ -298,21 +298,41 @@ class Download : Collector
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         );
 
-        var k = jsonContent.items.Select(async video =>
+        jsonContent.items = jsonContent.items.Select((video, index) =>
         {
-            var yt = new YoutubeClient();
-            var vinfo = await yt.Videos.GetAsync($"https://www.youtube.com/watch?v={video.Id}");
+            try
+            {
+                var yt = new YoutubeClient();
+                var vinfo = yt.Videos.GetAsync($"https://www.youtube.com/watch?v={video.Id}").Result;
 
-            var Thumbnails = vinfo.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
-            var CoverUrl = Thumbnails.LastOrDefault()!.Url;
+                var Thumbnails = vinfo.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+                var CoverUrl = Thumbnails.LastOrDefault()!.Url;
+                Console.WriteLine($"{index + 1} {video.Title} {CoverUrl}");
 
-            video.CoverUrl = CoverUrl;
+                video.CoverUrl = CoverUrl;
 
-            return video;
-        })
-        .Select(video => video.Result);
+                return video;
+            }
+            catch (System.Exception)
+            {
+                video.CoverUrl = "";
+                return video;
+            }
+        }).ToHashSet();
 
-        Console.WriteLine();
+        if (jsonContent != null)
+        {
+            jsonContent.items = jsonContent.items.ToList().OrderBy(v => v.Title).ToHashSet();
+
+            var finalJson = JsonSerializer.Serialize<Videos>(
+                jsonContent,
+                new JsonSerializerOptions
+                { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
+            );
+            
+
+            await File.WriteAllTextAsync("./customTitle.json", finalJson);
+        }
     }
 
 
@@ -321,7 +341,7 @@ class Download : Collector
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        await UpdateVideoFrontCover();
+        // await UpdateVideoFrontCover();
 
         Stopwatch watch = new Stopwatch();
         watch.Start();
@@ -339,10 +359,11 @@ class Download : Collector
 
         Directory.SetCurrentDirectory($"./{name}");
 
-        // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
         // await DownlaodList(playListInfo.id, videoQueue);
 
         watch.Stop();
         Console.WriteLine($"執行時間: {watch.Elapsed}");
+
+        // var explodeCount = await Downlaod(playListInfo.videos, playListInfo.videos.Count);
     }
 }

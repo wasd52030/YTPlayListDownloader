@@ -42,16 +42,9 @@
 
 using System.CommandLine;
 using YTPlayListDownloader.Collectors;
-using YTPlayListDownloader.Models;
 
 async Task Main()
 {
-    using var db = new DBContext();
-    // foreach (var video in db.Video)
-    // {
-    //     Console.WriteLine(video);
-    // }
-
     // root command
     var rootCommand = new RootCommand("youtube播放清單下載");
 
@@ -89,7 +82,7 @@ async Task Main()
         playlistOption
     };
     rootCommand.AddCommand(statCommand);
-    statCommand.SetHandler(async () => await DataAnalysis.Invoke(db));
+    statCommand.SetHandler(async () => await DataAnalysis.Invoke());
 
     // update command
     var updateCommand = new Command(name: "update", description: "自動取得在播放清單中的影片資訊，省得手動輸入")
