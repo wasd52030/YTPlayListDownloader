@@ -359,7 +359,7 @@ class Download : Collector
 
         Directory.SetCurrentDirectory($"./{name}");
 
-        // await DownlaodList(playListInfo.id, videoQueue);
+        await DownlaodList(playListInfo.id, videoQueue);
 
         watch.Stop();
         Console.WriteLine($"執行時間: {watch.Elapsed}");
