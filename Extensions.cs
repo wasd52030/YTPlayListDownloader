@@ -107,6 +107,7 @@ public static class Extensions
     {
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
 
         // var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
         // var url = Thumbnails.LastOrDefault()!.Url;
