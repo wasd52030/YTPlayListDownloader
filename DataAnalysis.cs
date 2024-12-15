@@ -50,7 +50,7 @@ class DataAnalysis
 
         // reference -> https://github.com/dotnet/runtime/issues/35281
         await File.WriteAllTextAsync(
-            Path.Combine(Directory.GetCurrentDirectory(), $"contributorStat.json"),
+            Path.Combine(Directory.GetCurrentDirectory(), "contributorStat.json"),
             JsonSerializer.Serialize(
                 new Dictionary<string, Dictionary<string, double>>() { { "統計", stat }, { "占比", percent } },
                 new JsonSerializerOptions
