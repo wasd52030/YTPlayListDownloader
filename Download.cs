@@ -121,7 +121,6 @@ class Download : Collector
                     youtubeStream =
                         await (await (await videoInfo.GetReStereoStream(1)).SeekTo(start)).AnnotateTag(CustomVideo,
                             queryPlayListId, youtubeCover);
-                    await Task.Delay(1500);
                     Console.WriteLine($"{filePath.Split('/').Last()} ReStereo ☑");
                 }
             }
@@ -136,19 +135,16 @@ class Download : Collector
 
                 youtubeStream =
                     await (await videoInfo.SeekTo(start)).AnnotateTag(CustomVideo, queryPlayListId, youtubeCover);
-                await Task.Delay(1500);
                 Console.WriteLine($"{filePath.Split('/').Last()} Seek ☑");
             }
             else
             {
                 youtubeStream =
                     await (await videoInfo.GetStream()).AnnotateTag(CustomVideo, queryPlayListId, youtubeCover);
-                await Task.Delay(1500);
             }
 
             using var fileStream = File.Create(filePath);
             await youtubeStream.CopyToAsync(fileStream);
-            await Task.Delay(1500);
             return true;
         }
         catch (System.Exception)
@@ -172,7 +168,7 @@ class Download : Collector
         var playListLength = videos.Count;
 
         // https://stackoverflow.com/questions/10806951/how-to-limit-the-amount-of-concurrent-async-i-o-operations
-        var throttler = new SemaphoreSlim(initialCount: 10);
+        var throttler = new SemaphoreSlim(initialCount: 5);
         List<Task> DownloadTasks = new List<Task>();
 
         if (videos.Count == 0)
