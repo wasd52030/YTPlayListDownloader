@@ -96,6 +96,15 @@ async Task Main()
         await at.Invoke();
     }, playlistOption);
 
+    var updateLocalCommand = new Command(name: "local", description: "對於下載下來的檔案做檢整");
+    updateCommand.Add(updateLocalCommand);
+    updateLocalCommand.SetHandler(async (playlistOption) =>
+    {
+        var u=new LocalVideoUpdater(playlistOption);
+        await u.Invoke();
+
+    },playlistOption);
+
     await rootCommand.InvokeAsync(args);
 }
 

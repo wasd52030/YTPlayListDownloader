@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using FFMpegCore;
 using FFMpegCore.Pipes;
 using TagLib.Id3v2;
+using FFMpegCore.Arguments;
 
 public static class Extensions
 {
@@ -61,6 +62,29 @@ public static class Extensions
         return res;
     }
 
+    public static async Task<Stream> GetMp3Stream(this Video video, string path)
+    {
+        var res = new MemoryStream();
+
+        var ffmpeg = FFMpegArguments.FromFileInput(path, true, options =>
+        {
+            options.WithArgument(new CustomArgument("-vn"));
+        })
+            .OutputToPipe(new StreamPipeSink(res),
+                options =>
+                {
+                    options.ForceFormat("mp3");
+                });
+
+        var ffmpegRes = await ffmpeg.ProcessAsynchronously();
+        if (ffmpegRes)
+        {
+            res.Position = 0;
+        }
+
+        return res;
+    }
+
     public static async Task<Stream> SeekTo(this IStreamInfo streamInfo, TimeSpan? start)
     {
         var res = new MemoryStream();
@@ -104,6 +128,20 @@ public static class Extensions
     }
 
     public static async Task<Stream> getPictureStream(this YoutubeExplode.Videos.Video video, string PictureUrl)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
+
+        // var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
+        // var url = Thumbnails.LastOrDefault()!.Url;
+        var response = await httpClient.GetAsync(PictureUrl);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsStreamAsync();
+    }
+
+    public static async Task<Stream> getPictureStream(this Video video, string PictureUrl)
     {
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
