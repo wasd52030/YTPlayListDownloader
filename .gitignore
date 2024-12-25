@@ -458,5 +458,6 @@ $RECYCLE.BIN/
 dist/
 
 **/*/*.mp3
+**/*/*.m4a
 *.zip
 **/*/*.zip
