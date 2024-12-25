@@ -109,7 +109,7 @@ class DataAnalysis
         // reference -> https://stackoverflow.com/questions/72504275/make-chart-fill-size-of-browser-window
         doughnut.WithTitle("statistics of contributors")
             .WithConfig(Config.init(Responsive: true))
-            .SavePNG("contributorStat", Width: 1200, Height: 800);
+            .SavePNG("contributorStat", Width: 1280, Height: 720);
 
         #endregion
 
