@@ -73,7 +73,7 @@ async Task Main()
         playlistOption
     };
     rootCommand.AddCommand(checkCommand);
-    checkCommand.SetHandler(async (playlistOption) => await Check.Invoke(playlistOption), playlistOption);
+    checkCommand.SetHandler(Check.Invoke, playlistOption);
 
 
     // stat command
@@ -82,7 +82,7 @@ async Task Main()
         playlistOption
     };
     rootCommand.AddCommand(statCommand);
-    statCommand.SetHandler(async () => await DataAnalysis.Invoke());
+    statCommand.SetHandler(DataAnalysis.Invoke);
 
     // update command
     var updateCommand = new Command(name: "update", description: "自動取得在播放清單中的影片資訊，省得手動輸入")
@@ -96,15 +96,29 @@ async Task Main()
         await at.Invoke();
     }, playlistOption);
 
-    var updateLocalCommand = new Command(name: "local", description: "對於下載下來的檔案做檢整");
+    var updateLocalCommand = new Command(name: "local", description: "對於下載下來的檔案做檢整"){
+        playlistOption
+    };
     updateCommand.Add(updateLocalCommand);
     updateLocalCommand.SetHandler(async (playlistOption) =>
     {
-        var u=new LocalVideoUpdater(playlistOption);
+        var u = new LocalVideoUpdater(playlistOption);
         await u.Invoke();
 
-    },playlistOption);
+    }, playlistOption);
 
+
+    var diffCommand = new Command(name: "diff", description: "檢查下載下來的長度是否與Youtube一致"){
+        playlistOption
+    };
+    rootCommand.Add(diffCommand);
+    diffCommand.SetHandler(async (playlistOption) =>
+    {
+        var u = new LocalDurationDiff(playlistOption);
+        await u.Invoke();
+
+    }, playlistOption);
+    
     await rootCommand.InvokeAsync(args);
 }
 
