@@ -39,10 +39,11 @@ abstract class Collector
         return (playlist.Id, playlist.Title, playlist.Author?.ChannelTitle!, VideoList);
     }
 
-    public static async Task<Videos> GetCustomTitle(){
+    public static async Task<Videos> GetCustomTitle()
+    {
         string jsonFile =
             await File.ReadAllTextAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./customTitle.json"));
-        
+
         return JsonSerializer.Deserialize<Videos>(
             jsonFile,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
