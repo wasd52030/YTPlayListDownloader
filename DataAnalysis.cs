@@ -73,9 +73,7 @@ class DataAnalysis
 
                 var detail = string.Join(
                     ", ",
-                    item.Select(item => item.key)
-                        .OrderBy(item => item.Length)
-                        .ThenBy(item => item)
+                    item.Select(item => $"{item.key}*{item.count}")
                         .Take(3)
                 );
 
@@ -83,8 +81,7 @@ class DataAnalysis
                 // https://dog0416.blogspot.com/2020/02/c-80-pattern-matching-enhancements.html
                 string s = item.Count() switch
                 {
-                    > 3 => $"[{item.Key}*{item.Count()} = {item.Key * item.Count()}] {detail}, ... 等{item.Count()}位",
-                    > 1 => $"[{item.Key}*{item.Count()} = {item.Key * item.Count()}] {detail}",
+                    > 1 => $"[{item.Key}*{item.Count()} = {item.Key * item.Count()}] {detail}, ...",
                     1 => $"[{item.Key}] {detail}",
                     _ => "" // seq.Count() 在此幾乎保證大於等於1，因此其餘狀況回傳空字串
                 };
@@ -94,7 +91,7 @@ class DataAnalysis
             })
             .Concat(
                 baseSeq.Where(item => item.Key == "unknown")
-                    .Select(item => ($"[{item.Count()}] {item.Key}", item.Count()))
+                    .Select(item => ($"[{item.Count()}] {item.Key}*{item.Count()}", item.Count()))
             )
             .ToList();
 
