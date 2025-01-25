@@ -4,6 +4,8 @@ using FFMpegCore;
 using FFMpegCore.Pipes;
 using TagLib.Id3v2;
 using FFMpegCore.Arguments;
+using System.Reflection;
+using System.Diagnostics;
 
 public static class Extensions
 {
@@ -156,10 +158,14 @@ public static class Extensions
 
             return await response.Content.ReadAsStreamAsync();
         }
-        catch (System.Exception)
+        catch (System.Exception ex)
         {
-            Console.WriteLine(video);
-            throw;
+            var stackTrace = new StackTrace(ex, true);
+            var frame = stackTrace.GetFrame(0);
+            var method = frame.GetMethod();
+
+            Console.WriteLine($"[{method}-boom] {video}");
+            return await getPictureStream(video,PictureUrl);
         }
     }
 

@@ -39,6 +39,8 @@ class LocalVideoUpdater : Collector
         {
             fileWatch.Restart();
 
+            await Task.Delay(2000);
+
             // await locker.WaitAsync();
 
             var filename = Path.GetFileNameWithoutExtension(file);
