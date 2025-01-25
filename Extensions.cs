@@ -149,10 +149,18 @@ public static class Extensions
 
         // var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
         // var url = Thumbnails.LastOrDefault()!.Url;
-        var response = await httpClient.GetAsync(PictureUrl);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await httpClient.GetAsync(PictureUrl);
+            response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadAsStreamAsync();
+            return await response.Content.ReadAsStreamAsync();
+        }
+        catch (System.Exception)
+        {
+            Console.WriteLine(video);
+            throw;
+        }
     }
 
     public static async Task<byte[]> ToByteArray(this Stream input)

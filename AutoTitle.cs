@@ -40,6 +40,7 @@ class AutoTitle : Collector
         return videos.Select(v =>
              {
                  var InPlaylist = playList.FirstOrDefault((playList) => playList.Id == v.Id);
+
                  if (InPlaylist != null)
                  {
                      if (special.Contains(v.Id))
@@ -67,6 +68,10 @@ class AutoTitle : Collector
                          var track = playList.IndexOf(InPlaylist) + 1;
                          v.Playlists.Add(new PlaylistInfo(id, owner, title, track));
                      }
+                 }
+                 else if (InPlaylist is null)
+                 {
+                    v.Playlists = v.Playlists.Where(list => list.Id != PlaylistInfo.Id).ToHashSet();
                  }
 
                  return v;
