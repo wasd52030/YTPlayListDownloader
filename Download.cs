@@ -65,7 +65,7 @@ class Download : Collector
         string[] suicide = new string[] { "ry3Tupx4BL4", "87moOXPTtSk", "4QXCPuwBz2E", "0_pfGRDugxg" };
         string[] unplayable = new string[] { "Ej0DA0BgbRU" };
 
-        return unplayable.Contains(videoId.ToString());
+        return false;
     }
 
     private bool IsNeedReStereo(VideoId videoId)
@@ -194,57 +194,57 @@ class Download : Collector
                 var filePath = $@"./{vtitle.Split("]").Last().Trim()}.mp3";
 
 
-                if (File.Exists(filePath))
+                // if (File.Exists(filePath))
+                // {
+                //     videos.Dequeue();
+                //     var message = $"{filePath.Split('/').Last()} ☑ {watch.Elapsed}";
+                //     Console.WriteLine(message);
+                // }
+                // else
+                // {
+
+                // }
+
+                if (v == null)
                 {
-                    videos.Dequeue();
-                    var message = $"{filePath.Split('/').Last()} ☑ {watch.Elapsed}";
-                    Console.WriteLine(message);
+                    jsonContent?.items.Add(new Video(vId, vtitle, null, url));
                 }
-                else
+
+                await throttler.WaitAsync();
+
+                DownloadTasks.Add(Task.Run(async () =>
                 {
-                    if (v == null)
+                    try
                     {
-                        jsonContent?.items.Add(new Video(vId, vtitle, null, url));
+                        Stopwatch watch = Stopwatch.StartNew();
+                        watch.Restart();
+                        var res = await DownloadVideo(queryPlayListId, video, jsonContent);
+                        watch.Stop();
+
+                        if (res)
+                        {
+                            var message = $"{filePath.Split('/').Last()} Download ☑ {watch.Elapsed}";
+                            Console.WriteLine(message);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{filePath.Split('/').Last()} ☑ {watch.Elapsed}");
+                            Console.WriteLine($"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
+                            Console.WriteLine($"\tPlease make backups in advance, or seek alternative services for downloading.");
+                        }
                     }
-
-                    await throttler.WaitAsync();
-
-                    DownloadTasks.Add(Task.Run(async () =>
+                    catch (System.Exception e)
                     {
-                        try
-                        {
-                            Stopwatch watch = Stopwatch.StartNew();
-                            watch.Restart();
-                            var res = await DownloadVideo(queryPlayListId, video, jsonContent);
-                            watch.Stop();
-
-                            if (res)
-                            {
-                                var message = $"{filePath.Split('/').Last()} Download ☑ {watch.Elapsed}";
-                                Console.WriteLine(message);
-                            }
-                            else
-                            {
-                                Console.WriteLine($"{filePath.Split('/').Last()} ☑ {watch.Elapsed}");
-                                Console.WriteLine(
-                                    $"\tDue to uncontrollable factors such as YouTube policies, downloading is temporarily unavailable.");
-                                Console.WriteLine(
-                                    $"\tPlease make backups in advance, or seek alternative services for downloading.");
-                            }
-                        }
-                        catch (System.Exception e)
-                        {
-                            Console.WriteLine($"\n{e}");
-                            Console.WriteLine("Boom！");
-                            throw;
-                        }
-                        finally
-                        {
-                            throttler.Release();
-                        }
-                    }));
-                    videos.Dequeue();
-                }
+                        Console.WriteLine($"\n{e}");
+                        Console.WriteLine("Boom！");
+                        throw;
+                    }
+                    finally
+                    {
+                        throttler.Release();
+                    }
+                }));
+                videos.Dequeue();
             }
             catch (System.Exception e)
             {
@@ -325,7 +325,7 @@ class Download : Collector
                 new JsonSerializerOptions
                 { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }
             );
-            
+
 
             await File.WriteAllTextAsync("./customTitle.json", finalJson);
         }
