@@ -42,13 +42,23 @@ class LocalDurationDiff : Collector
 
         using (var report = File.Create("./LengthDiffReport.csv"))
         {
-
+            TimeSpan checkpoint = new TimeSpan(0, 0, 45);
+            string message = "";
             for (int i = 0; i < playList.Count; i++)
             {
                 var p = await playList[i];
                 var m = mp3_files.Where(item => item.Track == i + 1).FirstOrDefault();
 
-                var message = $"{i + 1:000}, {p.Title}, Youtube與檔案長度差異:\t{p.Duration - m.Duration}\n";
+                var diff = p.Duration - m.Duration;
+
+                if (diff > checkpoint)
+                {
+                    message = $"\t{i + 1:000}, {p.Title}, Youtube與檔案長度差異:\t{diff}\n";
+                }else
+                {
+                    message = $"{i + 1:000}, {p.Title}, Youtube與檔案長度差異:\t{diff}\n";
+                }
+
                 byte[] info = new UTF8Encoding(true).GetBytes(message);
                 Console.WriteLine(message);
                 report.Write(info, 0, info.Length);
