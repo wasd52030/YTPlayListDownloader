@@ -149,8 +149,7 @@ public static class Extensions
         httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
         httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
 
-        // var Thumbnails = video.Thumbnails.OrderBy(thumbnail => thumbnail.Resolution.Width).ToList();
-        // var url = Thumbnails.LastOrDefault()!.Url;
+
         try
         {
             var response = await httpClient.GetAsync(PictureUrl);
@@ -165,6 +164,7 @@ public static class Extensions
             var method = frame.GetMethod();
 
             Console.WriteLine($"[{method}-boom] {video}");
+            Console.WriteLine(ex);
             return await getPictureStream(video,PictureUrl);
         }
     }
