@@ -6,6 +6,9 @@ using TagLib.Id3v2;
 using FFMpegCore.Arguments;
 using System.Reflection;
 using System.Diagnostics;
+using Svg;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 public static class Extensions
 {
@@ -146,13 +149,19 @@ public static class Extensions
     public static async Task<Stream> getPictureStream(this Video video, string PictureUrl)
     {
         using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("Accept", "image/jpg");
+        httpClient.DefaultRequestHeaders.Add("Accept", "image/*");
         httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
 
 
         try
         {
             var response = await httpClient.GetAsync(PictureUrl);
+            if (response.Content.Headers.GetValues("Content-Type").First().Contains("svg"))
+            {
+                var src = SvgDocument.Open<SvgDocument>(response.Content.ReadAsStream());
+                var bitmap = src.Draw();
+                return BitmapToStream(bitmap, ImageFormat.Png);
+            }
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStreamAsync();
@@ -165,7 +174,7 @@ public static class Extensions
 
             Console.WriteLine($"[{method}-boom] {video}");
             Console.WriteLine(ex);
-            return await getPictureStream(video,PictureUrl);
+            return await getPictureStream(video, PictureUrl);
         }
     }
 
@@ -174,6 +183,14 @@ public static class Extensions
         using MemoryStream ms = new MemoryStream();
         await input.CopyToAsync(ms);
         return ms.ToArray();
+    }
+
+    public static Stream BitmapToStream(this Image image, ImageFormat format)
+    {
+        var stream = new System.IO.MemoryStream();
+        image.Save(stream, format);
+        stream.Position = 0;
+        return stream;
     }
 
     public static async Task<Stream> AnnotateTag(this Stream stream, Video? playListVideoInfo, string queryId,
@@ -216,7 +233,6 @@ public static class Extensions
             {
                 Type = TagLib.PictureType.FrontCover,
                 Description = "Cover",
-                MimeType = System.Net.Mime.MediaTypeNames.Image.Png,
                 Data = await youtubeCover.ToByteArray(),
                 TextEncoding = TagLib.StringType.UTF16
             };
