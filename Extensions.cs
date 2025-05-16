@@ -233,6 +233,7 @@ public static class Extensions
             {
                 Type = TagLib.PictureType.FrontCover,
                 Description = "Cover",
+                MimeType = System.Net.Mime.MediaTypeNames.Image.Png,
                 Data = await youtubeCover.ToByteArray(),
                 TextEncoding = TagLib.StringType.UTF16
             };
