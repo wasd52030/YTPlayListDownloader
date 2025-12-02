@@ -5,12 +5,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 
-class AutoTitle : Collector
+class AutoTitle(string url) : Collector(url)
 {
-    public AutoTitle(string url) : base(url)
-    {
-    }
-
     private async Task<IEnumerable<Video>> Update(HashSet<Video> videos)
     {
 
